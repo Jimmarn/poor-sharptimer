@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
+using FixVectorLeak;
 
 public class CUserCmd
 {
@@ -89,5 +88,22 @@ public class CUserCmd
     public unsafe void DisableInput(IntPtr userCmd, nint value)
     {
         Unsafe.Write((void*)(userCmd + 0x50), Unsafe.Read<IntPtr>((void*)(userCmd + 0x50)) & ~(value));
+    }
+    public unsafe QAngle_t? GetViewAngles()
+    {
+        if (Handle == IntPtr.Zero)
+            return null;
+
+        var baseCmd = Unsafe.Read<IntPtr>((void*)(Handle + 0x40));
+        if (baseCmd == IntPtr.Zero)
+            return null;
+
+        var msgQAngle_t = Unsafe.Read<IntPtr>((void*)(baseCmd + 0x40));
+        if (msgQAngle_t == IntPtr.Zero)
+            return null;
+
+        var viewAngles = new QAngle_t(msgQAngle_t + 0x18);
+        
+        return viewAngles;
     }
 }
