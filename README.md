@@ -145,7 +145,7 @@ SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Count
   - [x] Special Tester Gifs
   - [x] Custom Player Gifs
   - [x] Dioscord Webhook
-  - [ ] Strafe Sync Bar on HUD
+  - [x] Strafe Sync Bar on HUD
 
 
 ## Authors:
