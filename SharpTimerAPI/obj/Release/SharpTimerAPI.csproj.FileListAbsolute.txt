@@ -1,0 +1,12 @@
+C:\sharptimer\poor-sharptimer\Build\addons\counterstrikesharp\shared\SharpTimerAPI\SharpTimerAPI.dll
+C:\sharptimer\poor-sharptimer\Build\addons\counterstrikesharp\shared\SharpTimerAPI\SharpTimerAPI.pdb
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.csproj.AssemblyReference.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.GeneratedMSBuildEditorConfig.editorconfig
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.AssemblyInfoInputs.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.AssemblyInfo.cs
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.csproj.CoreCompileInputs.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.sourcelink.json
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.dll
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\refint\SharpTimerAPI.dll
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.pdb
+C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\ref\SharpTimerAPI.dll

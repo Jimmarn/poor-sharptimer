@@ -1,0 +1,13 @@
+C:\sharptimer\poor-sharptimer\Build\addons\counterstrikesharp\plugins\SharpTimer-Example\SharpTimer-Example.dll
+C:\sharptimer\poor-sharptimer\Build\addons\counterstrikesharp\plugins\SharpTimer-Example\SharpTimer-Example.pdb
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.csproj.AssemblyReference.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.GeneratedMSBuildEditorConfig.editorconfig
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.AssemblyInfoInputs.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.AssemblyInfo.cs
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.csproj.CoreCompileInputs.cache
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.sourcelink.json
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTim.764C7936.Up2Date
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.dll
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\refint\SharpTimer-Example.dll
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\SharpTimer-Example.pdb
+C:\sharptimer\poor-sharptimer\SharpTimerAPI-Example\obj\Release\ref\SharpTimer-Example.dll
