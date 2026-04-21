@@ -131,21 +131,25 @@ SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using Count
   - [x] Global server ranks
     - [x] !points
     - [x] Global Point system
-- [ ] Surf Stages/Checkpoint support
+- [x] Surf Stages/Checkpoint support
   - [x] Stage/Checkpoint PBs with u/s
     - [x] Json Stage/Checkpoint PBs saving
-    - [ ] MySql Stage/Checkpoint PBs saving
+    - [x] MySql Stage/Checkpoint PBs saving
+    - [x] Flash time difference and speed difference per stage/checkpoint.
 - [x] MySQL
 	- [x] Basic Player Records
+	- [x] Stage Times
+	- [x] PlayerStats - Points
   - [x] Player Server Stats
   - [x] Player Map Stats
 - [x] Replays
-- [ ] Silly Stuff
+- [x] Silly Stuff
   - [x] Color customization
   - [x] Special Tester Gifs
   - [x] Custom Player Gifs
   - [x] Dioscord Webhook
-  - [ ] Strafe Sync Bar on HUD
+  - [x] Strafe Sync Bar on HUD
+  - [x] Various HUDs to toggle between
 
 
 ## Authors:
