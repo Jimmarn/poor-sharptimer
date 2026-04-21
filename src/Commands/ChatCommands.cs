@@ -497,22 +497,31 @@ namespace SharpTimer
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, slot));
         }
 
-        [ConsoleCommand("css_hud1", "Switch to HUD layout 1 (Trackmania-style, default)")]
+        [ConsoleCommand("css_hud1", "Switch to HUD layout 1 (clean default)")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HUDLayout1Command(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsPlayerOrSpectator(player)) return;
             playerTimers[player!.Slot].HudLayout = 1;
-            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}1 (Trackmania-style)");
+            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}1 (clean default)");
         }
 
-        [ConsoleCommand("css_hud2", "Switch to HUD layout 2 (original)")]
+        [ConsoleCommand("css_hud2", "Switch to HUD layout 2 (experimental sprites)")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void HUDLayout2Command(CCSPlayerController? player, CommandInfo command)
         {
             if (!IsPlayerOrSpectator(player)) return;
             playerTimers[player!.Slot].HudLayout = 2;
-            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}2 (original)");
+            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}2 (experimental sprites)");
+        }
+
+        [ConsoleCommand("css_hud3", "Switch to HUD layout 3 (original)")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void HUDLayout3Command(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsPlayerOrSpectator(player)) return;
+            playerTimers[player!.Slot].HudLayout = 3;
+            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}3 (original)");
         }
 
         [ConsoleCommand("css_keys", "Draws/Hides HUD Keys")]

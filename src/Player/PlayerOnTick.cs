@@ -309,6 +309,39 @@ namespace SharpTimer
 
                         if (!string.IsNullOrEmpty(hudContent))
                             player.PrintToCenterHtml(hudContent);
+
+                        bool hudEnabled = !playerTimer.HideTimerHud && hudOverlayEnabled;
+
+                        // ── CHECKPOINT DIFF FLASH via PrintToCenter (layouts 2-4, plain text) ──
+                        if (playerTimer.HudLayout != 1 && hudEnabled && !string.IsNullOrEmpty(playerTimer.CheckpointDiffText)
+                                       && DateTime.Now < playerTimer.CheckpointDiffExpiry)
+                        {
+                            bool faster      = playerTimer.CheckpointDiffFaster;
+                            string timeColor  = faster ? "#4FC3F7" : "#EF5350"; // blue = faster, red = slower
+                            string timeArrow  = faster ? "▲" : "▼";
+                            string label      = playerTimer.CheckpointFlashPlacement ?? "";
+                            string time       = playerTimer.CheckpointFlashTime ?? "";
+                            string timeDiff   = playerTimer.CheckpointDiffText ?? "";
+                            
+
+                            string speedHtml = "";
+                            if (!string.IsNullOrEmpty(playerTimer.CheckpointFlashSpeed) && !string.IsNullOrEmpty(playerTimer.CheckpointFlashSpeedDiff))
+                            {
+                                string speedDiff = playerTimer.CheckpointFlashSpeedDiff;
+                                bool speedFaster = speedDiff.StartsWith("+")
+                                                     ? int.TryParse(speedDiff.TrimStart('+'), out int sv) && sv > 0
+                                                     : int.TryParse(speedDiff, out int sv2) && sv2 > 0;
+                                string speedColor = speedFaster ? "#66BB6A" : "#FFA726"; // green = faster, orange = slower
+                                string speedArrow = speedFaster ? "▲" : "▼";
+                                speedHtml = $"<br><font color='{speedColor}'>{playerTimer.CheckpointFlashSpeed} u/s  {speedArrow} {speedDiff}</font>";
+                            }
+
+                            player.PrintToCenter(
+                                $"<font class='fontSize-s stratum-bold-italic' color='gray'>{label}  ·  {time}</font><br>" +
+                                $"<font class='fontSize-m stratum-bold-italic' color='{timeColor}'>{timeArrow} {timeDiff}s</font>" +
+                                speedHtml
+                            );
+                        }
                         
                         // idk what this is for
                         playerTimer.MovementService!.LegacyJump.OldJumpPressed = false;
@@ -324,184 +357,374 @@ namespace SharpTimer
         // Dispatch to the correct layout based on per-player preference
         private string GetHudContent(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
-            return playerTimer.HudLayout == 2
-                ? GetHudContentLayout2(playerTimer, player)
-                : GetHudContentLayout1(playerTimer, player);
+            return playerTimer.HudLayout switch {
+                2 => GetHudContentLayout2(playerTimer, player),
+                3 => GetHudContentLayout3(playerTimer, player),
+                4 => GetHudContentLayout4(playerTimer, player),
+                _ => GetHudContentLayout1(playerTimer, player)
+            };
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        // LAYOUT 1 — Trackmania-inspired (default)
-        // Top-left: leaderboard
-        // Top-center: checkpoint diff flash (2.5 s)
-        // Bottom-center: speed, sync, info, timer
-        // Bottom-left: keys
+        // ──────────────────────────────────────────────────────────────────────
+        // LAYOUT 1 — Trackmania-style with CP flash embedded in HTML (colored)
         // ──────────────────────────────────────────────────────────────────────
         private string GetHudContentLayout1(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
-            bool isTimerRunning   = playerTimer.IsTimerRunning;
-            bool isBonusRunning   = playerTimer.IsBonusTimerRunning;
-            PlayerButtons? btns   = player.Buttons;
-            Vector_t vel          = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
-            bool keyEnabled       = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
-            bool hudEnabled       = !playerTimer.HideTimerHud && hudOverlayEnabled;
+            bool isTimerRunning      = playerTimer.IsTimerRunning;
+            bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
+            int timerTicks           = playerTimer.TimerTicks;
+            PlayerButtons? playerButtons = player.Buttons;
+            Vector_t playerSpeed     = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
+            bool keyEnabled          = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
+            bool hudEnabled          = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-            if (!hudEnabled && !keyEnabled) return "";
+            string formattedPlayerVel = Math.Round(use2DSpeed
+                ? playerSpeed.Length2D()
+                : playerSpeed.Length())
+                .ToString("0000");
 
-            // velocity
-            string fmtVel = Math.Round(use2DSpeed ? vel.Length2D() : vel.Length()).ToString("0000");
-            int iVel = int.Parse(fmtVel);
-            string velColor = secondaryHUDcolor;
-            if (useDynamicColor)
+            int playerVel = int.Parse(formattedPlayerVel);
+
+            string secondaryHUDcolorDynamic = "LimeGreen";
+            int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
+            string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
+            for (int i = 0; i < velocityThresholds.Length; i++)
             {
-                int[] thresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
-                string[] colors  = { "LimeGreen","Lime","GreenYellow","Yellow","Gold","Orange","DarkOrange","Tomato","OrangeRed","Red","Crimson" };
-                velColor = "Crimson";
-                for (int i = 0; i < thresholds.Length; i++) { if (iVel < thresholds[i]) { velColor = colors[i]; break; } }
+                if (playerVel < velocityThresholds[i]) { secondaryHUDcolorDynamic = hudColors[i]; break; }
             }
 
-            string playerTime   = isTimerRunning  ? Utils.FormatTime(playerTimer.TimerTicks) :
-                                   isBonusRunning ? Utils.FormatTime(playerTimer.BonusTimerTicks) : "--:--.---";
-            string bonusTime    = Utils.FormatTime(playerTimer.BonusTimerTicks);
-            string fmtPre       = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+            string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
+            string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+            string playerTime = Utils.FormatTime(timerTicks);
+            if (playerTime.Length > 0) playerTime = playerTime.Substring(0, playerTime.Length - 1);
+            if (playerTime.IndexOf(':') == 1) playerTime = "0" + playerTime;
+            string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
+            if (playerBonusTime.Length > 0) playerBonusTime = playerBonusTime.Substring(0, playerBonusTime.Length - 1);
+            if (playerBonusTime.IndexOf(':') == 1) playerBonusTime = "0" + playerBonusTime;
 
-            var sb = new System.Text.StringBuilder();
-
-            // ── LEADERBOARD (top, left-aligned) ─────────────────────────────
-            if (hudEnabled && !playerTimer.IsReplaying)
-            {
-                var records = GetSortedRecordsForMode(playerTimer.Mode);
-                if (records != null && records.Count > 0)
-                {
-                    sb.Append("<div align='left'>");
-                    sb.Append($"<font class='fontSize-s stratum-light-mono' color='white'>");
-
-                    int top = Math.Min(5, records.Count);
-                    bool playerInTop = int.TryParse(playerTimer.CachedMapPlacement, out int pRank) && pRank <= 5;
-                    string mySteamId = player.SteamID.ToString();
-
-                    for (int i = 1; i <= top; i++)
-                    {
-                        if (!records.TryGetValue(i, out var rec)) continue;
-                        string rowColor = rec.SteamID == mySteamId ? primaryHUDcolor : "white";
-                        string rank = i.ToString().PadLeft(2, '\u00A0');
-                        string name = PadHtml(rec.PlayerName, 14);
-                        string time = Utils.FormatTime(rec.TimerTicks);
-                        sb.Append($"<font color='{rowColor}'>{rank}\u00A0\u00A0{name}\u00A0{time}</font><br>");
-                    }
-
-                    // Player's own row if outside top 5
-                    if (!playerInTop && pRank > 0 && !string.IsNullOrEmpty(playerTimer.CachedPB))
-                    {
-                        string sepLine = new string('\u2500', 24);
-                        sb.Append($"<font color='gray'>{sepLine}</font><br>");
-                        string rank = pRank.ToString().PadLeft(2, '\u00A0');
-                        string name = PadHtml(player.PlayerName, 14);
-                        string pb   = (playerTimer.CachedPB ?? "").Trim();
-                        sb.Append($"<font color='gray'>{rank}\u00A0\u00A0{name}\u00A0{pb}</font><br>");
-                    }
-
-                    sb.Append("</font></div>");
-                }
-            }
-
-            // ── CHECKPOINT DIFF FLASH (top-center, 2.5 s) ───────────────────
+            // ── CHECKPOINT DIFF FLASH (HTML, colored text) ───────────────────
+            string flashLine = "";
             if (hudEnabled && !string.IsNullOrEmpty(playerTimer.CheckpointDiffText)
                            && DateTime.Now < playerTimer.CheckpointDiffExpiry)
             {
-                bool isFaster = playerTimer.CheckpointDiffFaster;
-                string diffBg = isFaster ? "rgba(0,90,210,0.85)" : "rgba(190,20,20,0.85)";
-                string speedBg = isFaster ? "rgba(30,140,30,0.85)" : "rgba(180,90,0,0.85)";
+                bool faster     = playerTimer.CheckpointDiffFaster;
+                string timeColor  = faster ? "#5a97fa" : "#fa5a5a";
+                string arrow      = faster ? "▲" : "▼";
+                string label      = playerTimer.CheckpointFlashPlacement ?? "";
+                string time       = playerTimer.CheckpointFlashTime ?? "";
 
-                sb.Append("<div align='center'>");
+                flashLine =
+                    $"<div align='center'>" +
+                    $"<font color='white'>{label}  ·  {time}</font><br>" +
+                    $"<font color='{timeColor}'>{arrow} {playerTimer.CheckpointDiffText}s</font><br>";
 
-                // row 1: placement + cumulative time
-                if (!string.IsNullOrEmpty(playerTimer.CheckpointFlashPlacement))
-                    sb.Append($"<font class='fontSize-s stratum-bold-italic' " +
-                              $"style='background-color:rgba(0,0,0,0.65);'>" +
-                              $"\u00A0{playerTimer.CheckpointFlashPlacement}" +
-                              $"\u00A0\u00A0{playerTimer.CheckpointFlashTime}\u00A0</font><br>");
-
-                // row 2: time diff (blue = faster, red = slower)
-                sb.Append($"<font class='fontSize-m stratum-bold-italic' " +
-                          $"style='background-color:{diffBg};'>" +
-                          $"\u00A0{playerTimer.CheckpointDiffText}\u00A0</font><br>");
-
-                // row 3: speed at checkpoint + diff (green = faster, orange = slower)
-                if (!string.IsNullOrEmpty(playerTimer.CheckpointFlashSpeed))
-                    sb.Append($"<font class='fontSize-s stratum-light-mono' " +
-                              $"style='background-color:rgba(30,30,30,0.75);'>" +
-                              $"\u00A0{playerTimer.CheckpointFlashSpeed}\u00A0</font>" +
-                              $"<font class='fontSize-s stratum-bold-italic' " +
-                              $"style='background-color:{speedBg};'>" +
-                              $"\u00A0{(isFaster ? "▲" : "▼")}\u00A0</font><br>");
-
-                sb.Append("</div>");
+                if (!string.IsNullOrEmpty(playerTimer.CheckpointFlashSpeed) && !string.IsNullOrEmpty(playerTimer.CheckpointFlashSpeedDiff))
+                {
+                    string speedDiff   = playerTimer.CheckpointFlashSpeedDiff;
+                    bool   speedFaster = speedDiff.StartsWith("+")
+                                         ? int.TryParse(speedDiff.TrimStart('+'), out int sv) && sv > 0
+                                         : int.TryParse(speedDiff, out int sv2) && sv2 > 0;
+                    string speedColor  = speedFaster ? "#3b992c" : "#9c5125";
+                    string speedArrow  = speedFaster ? "▲" : "▼";
+                    flashLine +=
+                        $"<font color='white'>{playerTimer.CheckpointFlashSpeed} u/s  </font>" +
+                        $"<font color='{speedColor}'>{speedArrow} {speedDiff}</font><br>";
+                }
+                flashLine += "</div>";
             }
-            else
+
+            string timerLine =
+                isBonusTimerRunning
+                    ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage}</font> " +
+                        $"<font class='fontSize-xl horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
+                    : isTimerRunning
+                        ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'></font>" +
+                            $"<font class='fontSize-xl horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font><br>"
+                        : playerTimer.IsReplaying
+                            ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font> <br>"
+                            : "";
+
+            string veloLine =
+                $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}" +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   Speed </font> " +
+                $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color=' {playerVelColor}'>{formattedPlayerVel}</font> ";
+
+            string syncLine =
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F2}%</font> " +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
+
+            string infoLine =
+                playerTimer.CurrentZoneInfo.InBonusStartZone
+                ? GetBonusInfoLine(playerTimer)
+                : GetMainMapInfoLine(playerTimer) +
+                $"{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> | Stage: {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} " +
+                $"<font class='fontSize-s stratum-bold-italic' color='gray'>| ({formattedPlayerPre})|</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} " +
+                $"<font color='gray' class='fontSize-s stratum-bold-italic'>{GetPlayerPlacement(player)}</font>";
+
+            string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>" +
+                $"{((playerButtons & PlayerButtons.Moveleft)  != 0 ? "A" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Forward)   != 0 ? "W" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Moveright) != 0 ? "D" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Back)      != 0 ? "S" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Jump)      != 0 || playerTimer.MovementService!.LegacyJump.OldJumpPressed ? "J" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Duck)      != 0 ? "C" : "_")}";
+
+            return (hudEnabled
+                        ? flashLine +
+                          (VelocityHudEnabled ? veloLine : "") +
+                          (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
+                          timerLine +
+                          infoLine
+                        : "") +
+                   (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "");
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // LAYOUT 2 — Trackmania-style (plain, CP flash via PrintToCenter)
+        // ──────────────────────────────────────────────────────────────────────
+        private string GetHudContentLayout2(PlayerTimerInfo playerTimer, CCSPlayerController player)
+        {
+            bool isTimerRunning    = playerTimer.IsTimerRunning;
+            bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
+            int timerTicks         = playerTimer.TimerTicks;
+            PlayerButtons? playerButtons = player.Buttons;
+            Vector_t playerSpeed   = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
+            bool keyEnabled        = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
+            bool hudEnabled        = !playerTimer.HideTimerHud && hudOverlayEnabled;
+
+            string formattedPlayerVel = Math.Round(use2DSpeed
+                ? playerSpeed.Length2D()
+                : playerSpeed.Length())
+                .ToString("0000");
+
+            int playerVel = int.Parse(formattedPlayerVel);
+
+            string secondaryHUDcolorDynamic = "LimeGreen";
+            int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
+            string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
+            for (int i = 0; i < velocityThresholds.Length; i++)
             {
-                // spacer so the rest of the layout doesn't jump
-                sb.Append("<br><br>");
+                if (playerVel < velocityThresholds[i]) { secondaryHUDcolorDynamic = hudColors[i]; break; }
             }
+
+            string playerVelColor = useDynamicColor ? secondaryHUDcolorDynamic : secondaryHUDcolor;
+            string formattedPlayerPre = Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D()).ToString("000");
+            string playerTime = Utils.FormatTime(timerTicks);
+            if (playerTime.Length > 0) playerTime = playerTime.Substring(0, playerTime.Length - 1); // trim to centiseconds
+            if (playerTime.IndexOf(':') == 1) playerTime = "0" + playerTime; // 0:44.71 → 00:44.71
+            string playerBonusTime = Utils.FormatTime(playerTimer.BonusTimerTicks);
+            if (playerBonusTime.Length > 0) playerBonusTime = playerBonusTime.Substring(0, playerBonusTime.Length - 1);
+            if (playerBonusTime.IndexOf(':') == 1) playerBonusTime = "0" + playerBonusTime;
+
+            string timerLine =
+                isBonusTimerRunning
+                    ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage}</font> " +
+                        $"<font class='fontSize-xl horizontal-center' color='{primaryHUDcolor}'>{playerBonusTime}</font> <br>"
+                    : isTimerRunning
+                        ? $" <font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'></font>" +
+                            $"<font class='fontSize-xl horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font><br>"
+                        : playerTimer.IsReplaying
+                            ? $" <font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font> <br>"
+                            : "";
+
+            string veloLine =
+                $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}" +
+                
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   Speed </font> " +
+                $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color=' {playerVelColor}'>{formattedPlayerVel}</font> " ;
+                
+
+            string syncLine =
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F2}%</font> " +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
+
+            string infoLine = 
+                playerTimer.CurrentZoneInfo.InBonusStartZone
+                ? GetBonusInfoLine(playerTimer)
+                : GetMainMapInfoLine(playerTimer) + 
+                $"{((playerTimer.CurrentMapStage != 0 && useStageTriggers == true) ? $" <font color='gray' class='fontSize-s stratum-bold-italic'> | Stage: {playerTimer.CurrentMapStage}/{stageTriggerCount}</font>" : "")} " +
+                $"<font class='fontSize-s stratum-bold-italic' color='gray'>| ({formattedPlayerPre})|</font>{(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")} " + 
+                $"<font color='gray' class='fontSize-s stratum-bold-italic'>{GetPlayerPlacement(player)}</font>";
+
+            string keysLineNoHtml = $"{(hudEnabled ? "<br>" : "")}<font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>" +
+                $"{((playerButtons & PlayerButtons.Moveleft)  != 0 ? "A" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Forward)   != 0 ? "W" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Moveright) != 0 ? "D" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Back)      != 0 ? "S" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Jump)      != 0 || playerTimer.MovementService!.LegacyJump.OldJumpPressed ? "J" : "_")} " +
+                $"{((playerButtons & PlayerButtons.Duck)      != 0 ? "C" : "_")}";
+
+            return (hudEnabled
+                        ? (VelocityHudEnabled ? veloLine : "") +
+                          (StrafeHudEnabled && !playerTimer.IsReplaying ? syncLine : "") +
+                          timerLine +
+                          infoLine
+                        : "") +
+                   (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "");
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // ──────────────────────────────────────────────────────────────────────
+        // LAYOUT 3 — experimental sprite-based layout
+        // ──────────────────────────────────────────────────────────────────────
+        private const string SpriteBase = "https://raw.githubusercontent.com/Jimmarn/poor-sharptimer/refs/heads/main/";
+
+        private static string LcdDigits(string number, string folder, string suffix, int height)
+        {
+            var sb = new System.Text.StringBuilder();
+            string baseUrl = $"{SpriteBase}Numerical%20Sprites/{folder}/";
+            foreach (char c in number)
+            {
+                if (c == ' ') continue;
+                string file = c == '.' ? $"dot-{suffix}.png" : $"{c}-{suffix}.png";
+                sb.Append($"<img src='{baseUrl}{file}' height='{height}'>");
+            }
+            return sb.ToString();
+        }
+
+        private static string TimerDigits(string time, int height)
+        {
+            var sb = new System.Text.StringBuilder();
+            string baseUrl = $"{SpriteBase}Numerical%20Sprites/TimerDigits/";
+            foreach (char c in time)
+            {
+                string file = c switch {
+                    ':' => "colon-oswald.png",
+                    '.' => "dot-oswald.png",
+                    _   => $"{c}-oswald.png"
+                };
+                sb.Append($"<img src='{baseUrl}{file}' height='{height}'>");
+            }
+            return sb.ToString();
+        }
+
+        private static string KeyIcon(string key, bool pressed, int height)
+        {
+            string prefix = pressed ? "KeyPress" : "Key";
+            return $"<img src='{SpriteBase}KeyIcons/{prefix}-{key}.png' height='{height}'>";
+        }
+
+        private static string OrdinalSuffix(string rankStr)
+        {
+            if (!int.TryParse(rankStr, out int n) || n <= 0) return rankStr ?? "";
+            return (n % 100) switch {
+                11 or 12 or 13 => $"{n}th",
+                _ => (n % 10) switch {
+                    1 => $"{n}st",
+                    2 => $"{n}nd",
+                    3 => $"{n}rd",
+                    _ => $"{n}th"
+                }
+            };
+        }
+
+        private string GetHudContentLayout3(PlayerTimerInfo playerTimer, CCSPlayerController player)
+        {
+            bool isTimerRunning = playerTimer.IsTimerRunning;
+            bool isBonusRunning = playerTimer.IsBonusTimerRunning;
+            PlayerButtons? btns = player.Buttons;
+            Vector_t vel        = player.PlayerPawn!.Value!.AbsVelocity.ToVector_t();
+            bool keyEnabled     = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
+            bool hudEnabled     = !playerTimer.HideTimerHud && hudOverlayEnabled;
+
+            if (!hudEnabled && !keyEnabled) return "";
+
+            int iVel    = (int)Math.Round(use2DSpeed ? vel.Length2D() : vel.Length());
+            string fmtVel = iVel.ToString("0000");  // always 4 digits: 0260
+            string fmtPre = ((int)Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D())).ToString("0000");
+            // Timer: fixed width by always zero-padding minutes to 2 digits → "00:04.521"
+            // Empty string when not running (not replaying, not bonus) — same as original behavior
+            string playerTime = "";
+            if (isTimerRunning)
+                playerTime = PadTimerFixed(Utils.FormatTime(playerTimer.TimerTicks));
+            else if (isBonusRunning)
+                playerTime = PadTimerFixed(Utils.FormatTime(playerTimer.BonusTimerTicks));
+            else if (playerTimer.IsReplaying)
+                playerTime = PadTimerFixed(Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame));
+            // sync always 5 chars: 00.00 – 99.99 (cap at 99.99 to avoid 6-char 100.00)
+            string syncStr = playerTimer.Sync >= 99.995 ? "99.99" : playerTimer.Sync.ToString("00.00");
+
+            var sb = new System.Text.StringBuilder();
+
+
+
+            // ── MAIN HUD — row by row, CS2 doesn't support multi-column tables ──
 
             if (hudEnabled)
             {
-                // ── SPEED ────────────────────────────────────────────────────
+                // Row 1: left info line | speed sprites | right key row 1 (W)
+                bool kW = keyEnabled && !playerTimer.IsReplaying && (btns & PlayerButtons.Forward)   != 0;
+                bool kA = keyEnabled && !playerTimer.IsReplaying && (btns & PlayerButtons.Moveleft)  != 0;
+                bool kS = keyEnabled && !playerTimer.IsReplaying && (btns & PlayerButtons.Back)      != 0;
+                bool kD = keyEnabled && !playerTimer.IsReplaying && (btns & PlayerButtons.Moveright) != 0;
+                bool kJ = keyEnabled && !playerTimer.IsReplaying && ((btns & PlayerButtons.Jump) != 0 || playerTimer.MovementService!.LegacyJump.OldJumpPressed);
+                bool kC = keyEnabled && !playerTimer.IsReplaying && (btns & PlayerButtons.Duck)      != 0;
+
+                int kDir = 10;
+                int kCJ  = 7;
+
+                string placement = OrdinalSuffix(playerTimer.CachedMapPlacement ?? "");
+                string pb        = (playerTimer.CachedPB ?? "").Trim();
+                string stageStr  = (useStageTriggers && playerTimer.CurrentMapStage != 0)
+                                   ? $"{playerTimer.CurrentMapStage}/{stageTriggerCount}" : "";
+                string tierStr   = (MapTierHudEnabled && currentMapTier != null) ? $"Tier {currentMapTier}" : "";
+
+                // Line 1: [mode]  [speed sprites]  [W key]
+                sb.Append($"<font class='fontSize-s stratum-bold-italic' color='gray'>{playerTimer.Mode}</font>");
                 if (VelocityHudEnabled)
-                {
-                    string gif = playerTimer.IsTester ? (playerTimer.TesterSmolGif ?? "") : "";
-                    sb.Append($"{gif}<font class='fontSize-l horizontal-center' color='{velColor}'>{fmtVel}</font>" +
-                              $"<font class='fontSize-s stratum-bold-italic' color='gray'>\u00A0({fmtPre})</font>{gif}<br>");
-                }
+                    sb.Append($"\u00A0\u00A0{LcdDigits(fmtVel, "light-blue", "lblue", 10)}");
+                if (keyEnabled && !playerTimer.IsReplaying)
+                    sb.Append($"\u00A0\u00A0{KeyIcon("Up", kW, kDir)}");
+                sb.Append("<br>");
 
-                // ── SYNC ─────────────────────────────────────────────────────
+                // Line 2: [placement]  [sync sprites]  [A S D keys]
+                if (!string.IsNullOrEmpty(placement))
+                    sb.Append($"<font class='fontSize-m stratum-bold-italic' color='white'>{placement}</font>");
                 if (StrafeHudEnabled && !playerTimer.IsReplaying)
-                    sb.Append($"<font class='fontSize-s stratum-bold-italic' color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font><br>");
+                    sb.Append($"\u00A0\u00A0{LcdDigits(syncStr, "Orange", "orange", 7)}");
+                if (keyEnabled && !playerTimer.IsReplaying)
+                    sb.Append($"\u00A0\u00A0{KeyIcon("Left", kA, kDir)}{KeyIcon("Down", kS, kDir)}{KeyIcon("Right", kD, kDir)}");
+                sb.Append("<br>");
 
-                // ── INFO LINE (mode / stage / style) ─────────────────────────
-                string infoLine = BuildInfoLine(playerTimer);
-                if (!string.IsNullOrEmpty(infoLine))
-                    sb.Append($"<font class='fontSize-s stratum-bold-italic' color='gray'>{infoLine}</font><br>");
+                // Line 3: [PB time]  [timer sprites]  [C  J keys]
+                if (!string.IsNullOrEmpty(pb))
+                    sb.Append($"<font class='fontSize-s stratum-light-mono' color='gray'>{pb}</font>");
+                if (!string.IsNullOrEmpty(playerTime))
+                {
+                    sb.Append($"\u00A0\u00A0");
+                    if (isBonusRunning)
+                        sb.Append($"<font class='fontSize-s stratum-bold-italic' color='gray'>B{playerTimer.BonusStage}\u00A0</font>");
+                    else if (playerTimer.IsReplaying)
+                        sb.Append($"<font class='fontSize-s stratum-bold-italic' color='red'>◉\u00A0</font>");
+                    sb.Append(TimerDigits(playerTime, 16));
+                }
+                if (keyEnabled && !playerTimer.IsReplaying)
+                    sb.Append($"\u00A0\u00A0{KeyIcon("C", kC, kCJ)}\u00A0\u00A0{KeyIcon("J", kJ, kCJ)}");
+                sb.Append("<br>");
 
-                // ── TIMER ────────────────────────────────────────────────────
-                if (isBonusRunning)
+                // Line 4: [stage | tier | rank icon]  [pre-speed]
+                if (!string.IsNullOrEmpty(stageStr) || !string.IsNullOrEmpty(tierStr) || (RankIconsEnabled && !string.IsNullOrEmpty(playerTimer.RankHUDIcon)))
                 {
-                    sb.Append($"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Bonus #{playerTimer.BonusStage}\u00A0</font>" +
-                              $"<font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{bonusTime}</font><br>");
+                    if (!string.IsNullOrEmpty(stageStr))
+                        sb.Append($"<font class='fontSize-s stratum-bold-italic' color='gray'>{stageStr}</font>");
+                    if (RankIconsEnabled && !string.IsNullOrEmpty(playerTimer.RankHUDIcon))
+                        sb.Append($"\u00A0<img src='{playerTimer.RankHUDIcon}' height='12'>");
+                    if (!string.IsNullOrEmpty(tierStr))
+                        sb.Append($"<font class='fontSize-s stratum-bold-italic' color='gray'>\u00A0{tierStr}</font>");
+                    if (fmtPre != "0000" && !string.IsNullOrEmpty(fmtPre))
+                        sb.Append($"\u00A0\u00A0{LcdDigits(fmtPre, "Gray", "gray", 7)}");
+                    sb.Append("<br>");
                 }
-                else if (playerTimer.IsReplaying)
-                {
-                    sb.Append($"<font class='horizontal-center' color='red'>◉ REPLAY {Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame)}</font><br>");
-                }
-                else
-                {
-                    string place = !string.IsNullOrEmpty(playerTimer.CachedMapPlacement)
-                        ? $"\u00A0(#{playerTimer.CachedMapPlacement})" : "";
-                    sb.Append($"<font class='fontSize-l horizontal-center' color='{primaryHUDcolor}'>{playerTime}</font>" +
-                              $"<font class='fontSize-s stratum-bold-italic' color='gray'>{place}</font><br>");
-                }
-            }
-
-            // ── KEYS (bottom, left-aligned) ───────────────────────────────────
-            if (keyEnabled && !playerTimer.IsReplaying)
-            {
-                if (hudEnabled) sb.Append("<br>");
-                string a = (btns & PlayerButtons.Moveleft)  != 0 ? "A" : "_";
-                string w = (btns & PlayerButtons.Forward)   != 0 ? "W" : "_";
-                string d = (btns & PlayerButtons.Moveright) != 0 ? "D" : "_";
-                string s = (btns & PlayerButtons.Back)      != 0 ? "S" : "_";
-                string j = ((btns & PlayerButtons.Jump)     != 0 || playerTimer.MovementService!.LegacyJump.OldJumpPressed) ? "J" : "_";
-                string c = (btns & PlayerButtons.Duck)      != 0 ? "C" : "_";
-                sb.Append($"<div align='left'><font class='fontSize-ml stratum-light-mono' color='{tertiaryHUDcolor}'>" +
-                          $"{a} {w} {d} {s} {j} {c}</font></div>");
             }
 
             return sb.ToString();
         }
 
         // ──────────────────────────────────────────────────────────────────────
-        // LAYOUT 2 — original layout (preserved as-was)
+        // LAYOUT 4 — original layout (preserved as-was)
         // ──────────────────────────────────────────────────────────────────────
-        private string GetHudContentLayout2(PlayerTimerInfo playerTimer, CCSPlayerController player)
+        private string GetHudContentLayout4(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
             bool isTimerRunning    = playerTimer.IsTimerRunning;
             bool isBonusTimerRunning = playerTimer.IsBonusTimerRunning;
@@ -579,26 +802,15 @@ namespace SharpTimer
         // Helpers shared by both layouts
         // ──────────────────────────────────────────────────────────────────────
 
-        /// <summary>Pad a string to <paramref name="width"/> chars using non-breaking spaces.</summary>
-        private static string PadHtml(string? input, int width)
+        /// <summary>Pads minutes to 2 digits and trims to centiseconds (MM:SS.cc — always 8 chars).</summary>
+        private static string PadTimerFixed(string time)
         {
-            var s = input ?? "";
-            if (s.Length > width) s = s.Substring(0, width - 1) + "…";
-            return s.PadRight(width, '\u00A0');
+            int colonIdx = time.IndexOf(':');
+            if (colonIdx == 1) time = "0" + time;   // "4:52.123" → "04:52.123"
+            // drop last digit: "04:52.123" → "04:52.12"
+            if (time.Length > 0) time = time.Substring(0, time.Length - 1);
+            return time;
         }
-
-        /// <summary>Returns the sorted record dictionary for the given mode name.</summary>
-        private Dictionary<int, PlayerRecord>? GetSortedRecordsForMode(string mode) =>
-            mode?.ToLower() switch
-            {
-                "standard" => SortedCachedStandardRecords,
-                "85t"      => SortedCached85tRecords,
-                "102t"     => SortedCached102tRecords,
-                "128t"     => SortedCached128tRecords,
-                "source"   => SortedCachedSourceRecords,
-                "bhop"     => SortedCachedBhopRecords,
-                _          => SortedCachedStandardRecords
-            };
 
         /// <summary>Builds the compact info line: "[stage/total] | Mode | Style"</summary>
         private string BuildInfoLine(PlayerTimerInfo playerTimer)

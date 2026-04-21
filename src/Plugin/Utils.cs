@@ -198,7 +198,7 @@ namespace SharpTimer
         {
             int differenceTicks = previousTicks - currentTicks;
             string sign = (differenceTicks > 0) ? "-" : "+";
-            char signColor = (differenceTicks > 0) ? ChatColors.Green : ChatColors.Red;
+            char signColor = (differenceTicks > 0) ? ChatColors.LightBlue : ChatColors.LightRed;
 
             TimeSpan timeDifference = TimeSpan.FromSeconds(Math.Abs(differenceTicks) / 64.0);
 
@@ -220,7 +220,7 @@ namespace SharpTimer
             {
                 int difference = previousSpeedInt - currentSpeedInt;
                 string sign = (difference > 0) ? "-" : "+";
-                char signColor = (difference < 0) ? ChatColors.Green : ChatColors.Red;
+                char signColor = (difference < 0) ? ChatColors.Lime : ChatColors.Orange;
 
                 return $"{(noColor ? "" : $"{signColor}")}{sign}{Math.Abs(difference)}";
             }

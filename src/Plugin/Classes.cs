@@ -164,7 +164,8 @@ namespace SharpTimer
         public DateTime CheckpointDiffExpiry { get; set; }  // hide after this time
         public string? CheckpointFlashTime { get; set; }    // formatted cumulative stage time e.g. "0:24.271"
         public string? CheckpointFlashPlacement { get; set; } // e.g. "2nd" or "Stage 3"
-        public string? CheckpointFlashSpeed { get; set; }    // speed at checkpoint e.g. "2639"
+        public string? CheckpointFlashSpeed { get; set; }     // speed at checkpoint e.g. "387"
+        public string? CheckpointFlashSpeedDiff { get; set; } // speed diff vs PB e.g. "+42" or "-15"
         public string? ReplayHUDString { get; set; }
         public string? RankHUDIcon { get; set; }
         public string? CachedRank { get; set; }

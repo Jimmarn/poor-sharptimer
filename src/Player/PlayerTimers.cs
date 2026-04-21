@@ -243,6 +243,28 @@ namespace SharpTimer
                                 }
                             }
 
+                            // ── CHECKPOINT DIFF FLASH (stage maps) ───────────────────────
+                            if (previousStageTime != 0)
+                            {
+                                double diffSeconds = (playerStageTicks - previousStageTime) / 64.0;
+                                bool faster = diffSeconds < 0;
+                                string sign = faster ? "" : "+";
+                                playerTimer.CheckpointDiffText       = $"{sign}{diffSeconds:F3}";
+                                playerTimer.CheckpointDiffFaster     = faster;
+                                playerTimer.CheckpointDiffExpiry     = DateTime.Now.AddSeconds(2.5);
+                                playerTimer.CheckpointFlashTime      = formattedStageTicks;
+                                playerTimer.CheckpointFlashPlacement = $"Stage {stageTrigger}";
+                                playerTimer.CheckpointFlashSpeed     = currentSpeed;
+
+                                string speedDiff = "n/a";
+                                if (int.TryParse(currentSpeed, out int curS) && int.TryParse(previousStageSpeed, out int pbS))
+                                {
+                                    int d = curS - pbS;
+                                    speedDiff = (d >= 0 ? "+" : "") + d;
+                                }
+                                playerTimer.CheckpointFlashSpeedDiff = speedDiff;
+                            }
+
                             playerTimer.CurrentMapStage++;
                             playerTimer.StageTicks = 0;
                         }
@@ -349,18 +371,26 @@ namespace SharpTimer
                                 }
                             }
 
-                            // ── CHECKPOINT DIFF FLASH (layout 1) ─────────────────────────
-                            if (previousStageTime != 0 && playerTimer.HudLayout == 1)
+                            // ── CHECKPOINT DIFF FLASH (all layouts) ──────────────────────
+                            if (previousStageTime != 0)
                             {
                                 double diffSeconds = (playerTimerTicks - previousStageTime) / 64.0;
                                 bool faster = diffSeconds < 0;
                                 string sign = faster ? "" : "+";
-                                playerTimer.CheckpointDiffText = $"{sign}{diffSeconds:F3}";
-                                playerTimer.CheckpointDiffFaster = faster;
-                                playerTimer.CheckpointDiffExpiry = DateTime.Now.AddSeconds(2.5);
-                                playerTimer.CheckpointFlashTime = Utils.FormatTime(playerTimerTicks);
+                                playerTimer.CheckpointDiffText       = $"{sign}{diffSeconds:F3}";
+                                playerTimer.CheckpointDiffFaster     = faster;
+                                playerTimer.CheckpointDiffExpiry     = DateTime.Now.AddSeconds(2.5);
+                                playerTimer.CheckpointFlashTime      = Utils.FormatTime(playerTimerTicks);
                                 playerTimer.CheckpointFlashPlacement = $"CP {playerTimer.CurrentMapCheckpoint}";
-                                playerTimer.CheckpointFlashSpeed = currentStageSpeed;
+                                playerTimer.CheckpointFlashSpeed     = currentStageSpeed;
+
+                                string speedDiff = "n/a";
+                                if (int.TryParse(currentStageSpeed, out int curS) && int.TryParse(previousStageSpeed, out int pbS))
+                                {
+                                    int d = curS - pbS;
+                                    speedDiff = (d >= 0 ? "+" : "") + d;
+                                }
+                                playerTimer.CheckpointFlashSpeedDiff = speedDiff;
                             }
                         }
                     });
