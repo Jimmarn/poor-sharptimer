@@ -10,3 +10,15 @@ C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.dll
 C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\refint\SharpTimerAPI.dll
 C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.pdb
 C:\sharptimer\poor-sharptimer\SharpTimerAPI\obj\Release\ref\SharpTimerAPI.dll
+C:\sharptimer\cloned\poor-sharptimer\Build\addons\counterstrikesharp\shared\SharpTimerAPI\SharpTimerAPI.dll
+C:\sharptimer\cloned\poor-sharptimer\Build\addons\counterstrikesharp\shared\SharpTimerAPI\SharpTimerAPI.pdb
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.csproj.AssemblyReference.cache
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.GeneratedMSBuildEditorConfig.editorconfig
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.AssemblyInfoInputs.cache
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.AssemblyInfo.cs
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.csproj.CoreCompileInputs.cache
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.sourcelink.json
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.dll
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\refint\SharpTimerAPI.dll
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\SharpTimerAPI.pdb
+C:\sharptimer\cloned\poor-sharptimer\SharpTimerAPI\obj\Release\ref\SharpTimerAPI.dll

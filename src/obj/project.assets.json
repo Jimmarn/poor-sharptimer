@@ -2,9 +2,10 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "CounterStrikeSharp.API/1.0.364": {
+      "CounterStrikeSharp.API/1.0.366": {
         "type": "package",
         "dependencies": {
+          "FastGenericNew": "3.3.1",
           "McMaster.NETCore.Plugins": "1.4.0",
           "Microsoft.CSharp": "4.7.0",
           "Microsoft.DotNet.ApiCompat.Task": "8.0.203",
@@ -27,6 +28,19 @@
         "runtime": {
           "lib/net8.0/_._": {
             "related": ".runtimeconfig.json;.xml"
+          }
+        }
+      },
+      "FastGenericNew/3.3.1": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/FastGenericNew.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/FastGenericNew.dll": {
+            "related": ".xml"
           }
         }
       },
@@ -1126,18 +1140,43 @@
     }
   },
   "libraries": {
-    "CounterStrikeSharp.API/1.0.364": {
-      "sha512": "+1KegkE7HTlNMA20ncpEZFkCJKtE9ZzEOY8yBWNZP7C6eOmpHTJ6sjvYRWMy2MEC4L7b2uAT7zfysjryDmFMhQ==",
+    "CounterStrikeSharp.API/1.0.366": {
+      "sha512": "H+c2YtK3ANP7Gn/42HtK8X8Loj3ByiMSPWpRZ3golMyszgQlr8+EE+QTMADAk8Ra1iQCD7TnBqgnR0D4HIWDrA==",
       "type": "package",
-      "path": "counterstrikesharp.api/1.0.364",
+      "path": "counterstrikesharp.api/1.0.366",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "counterstrikesharp.api.1.0.364.nupkg.sha512",
+        "counterstrikesharp.api.1.0.366.nupkg.sha512",
         "counterstrikesharp.api.nuspec",
         "lib/net8.0/CounterStrikeSharp.API.dll",
         "lib/net8.0/CounterStrikeSharp.API.runtimeconfig.json",
         "lib/net8.0/CounterStrikeSharp.API.xml"
+      ]
+    },
+    "FastGenericNew/3.3.1": {
+      "sha512": "KVd7GryA68XxM/+4gtiMuBW2yUN9yb/1JqoSFAhmK1HZ8ygKPIYdOycJeIrho9Ds1n3H5OO/bOLZ3w87eI3iaw==",
+      "type": "package",
+      "path": "fastgenericnew/3.3.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Logo.png",
+        "README_nuget.md",
+        "fastgenericnew.3.3.1.nupkg.sha512",
+        "fastgenericnew.nuspec",
+        "lib/net461/FastGenericNew.dll",
+        "lib/net461/FastGenericNew.xml",
+        "lib/net48/FastGenericNew.dll",
+        "lib/net48/FastGenericNew.xml",
+        "lib/net6.0/FastGenericNew.dll",
+        "lib/net6.0/FastGenericNew.xml",
+        "lib/net8.0/FastGenericNew.dll",
+        "lib/net8.0/FastGenericNew.xml",
+        "lib/netstandard2.0/FastGenericNew.dll",
+        "lib/netstandard2.0/FastGenericNew.xml",
+        "lib/netstandard2.1/FastGenericNew.dll",
+        "lib/netstandard2.1/FastGenericNew.xml"
       ]
     },
     "McMaster.NETCore.Plugins/1.4.0": {
@@ -2956,7 +2995,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
-      "CounterStrikeSharp.API >= 1.0.364",
+      "CounterStrikeSharp.API >= 1.0.366",
       "Microsoft.Data.SQLite >= 8.0.8",
       "Nexd.MySQL >= 1.0.2",
       "Npgsql >= 8.0.3",
@@ -2971,11 +3010,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\sharptimer\\poor-sharptimer\\src\\SharpTimer.csproj",
+      "projectUniqueName": "c:\\sharptimer\\cloned\\poor-sharptimer\\src\\SharpTimer.csproj",
       "projectName": "SharpTimer",
-      "projectPath": "C:\\sharptimer\\poor-sharptimer\\src\\SharpTimer.csproj",
+      "projectPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\src\\SharpTimer.csproj",
       "packagesPath": "C:\\Users\\jimtm\\.nuget\\packages\\",
-      "outputPath": "C:\\sharptimer\\poor-sharptimer\\src\\obj\\",
+      "outputPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\src\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2996,8 +3035,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\sharptimer\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
-              "projectPath": "C:\\sharptimer\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj"
+            "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
+              "projectPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj"
             }
           }
         }
@@ -3021,7 +3060,7 @@
             "include": "Compile, Build, Native, ContentFiles, Analyzers, BuildTransitive",
             "suppressParent": "None",
             "target": "Package",
-            "version": "[1.0.364, )"
+            "version": "[1.0.366, )"
           },
           "Microsoft.Data.SQLite": {
             "target": "Package",

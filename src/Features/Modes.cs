@@ -63,13 +63,22 @@ public partial class SharpTimer
 
     private bool TryParseMode(string input, out Mode mode)
     {
+        if (int.TryParse(input, out int numericValue))
+        {
+            if (Enum.IsDefined(typeof(Mode), numericValue))
+            {
+                mode = (Mode)numericValue;
+                if (ModeManager.IsModeEnabled(mode))
+                    return true;
+            }
+        }
+
         if (Enum.TryParse<Mode>(input, true, out mode) && ModeManager.IsModeEnabled(mode))
         {
             return true;
         }
 
-        var modes = ModeManager.GetEnabledModes();
-        foreach (var m in modes)
+        foreach (var m in ModeManager.GetEnabledModes())
         {
             if (GetModeName(m).Equals(input, StringComparison.OrdinalIgnoreCase))
             {
@@ -98,7 +107,19 @@ public partial class SharpTimer
 
     private void ApplyModeSettings(CCSPlayerController player, Mode mode)
     {
-        var config = _configValues[ModeIndexLookup[mode]];
+        if (_configValues == null || _configValues.Length == 0)
+        {
+            Utils.LogError("[MODE] _configValues was null, initializing mode configs now.");
+            InitializeModeConfigs();
+        }
+
+        if (!ModeIndexLookup.TryGetValue(mode, out var index))
+        {
+            Utils.LogError($"[MODE] No config index found for mode {mode}");
+            return;
+        }
+
+        var config = _configValues[index];
 
         player.ReplicateConVar("sv_airaccelerate", config.AirAccelerate.ToString(CultureInfo.InvariantCulture));
         player.ReplicateConVar("sv_accelerate", config.Accelerate.ToString(CultureInfo.InvariantCulture));
@@ -199,18 +220,32 @@ public partial class SharpTimer
 
     private void ApplyModeCvars(CCSPlayerController player)
     {
-        if (player == null || player.IsBot || !player.IsValid || player.IsHLTV) return;
+        if (player == null || player.IsBot || !player.IsValid || player.IsHLTV)
+            return;
 
-        if (!TryParseMode(playerTimers[player.Slot].Mode, out Mode playerMode)) return;
-        
+        if (_configValues == null || _configValues.Length == 0)
+        {
+            Utils.LogError("[MODE] _configValues was null in ApplyModeCvars, initializing mode configs now.");
+            InitializeModeConfigs();
+        }
+
+        if (!TryParseMode(playerTimers[player.Slot].Mode, out Mode playerMode))
+            return;
+            
         if (_accel == null || _airaccel == null || _wishspeed == null || _friction == null)
         {
             Utils.LogDebug("ApplyConvar: Mode convar values are null");
             return;
         }
 
-        ModeConfig modeConfig = _configValues[ModeIndexLookup[playerMode]];
-        
+        if (!ModeIndexLookup.TryGetValue(playerMode, out var index))
+        {
+            Utils.LogError($"[MODE] No config index found for mode {playerMode}");
+            return;
+        }
+
+        ModeConfig modeConfig = _configValues[index];
+            
         _accel.SetValue(modeConfig.Accelerate);
         _airaccel.SetValue(modeConfig.AirAccelerate);
         _wishspeed.SetValue(modeConfig.Wishspeed);

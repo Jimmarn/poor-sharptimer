@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "lJ3piIVYUug=",
+  "dgSpecHash": "B48YWexJBNA=",
   "success": true,
-  "projectFilePath": "C:\\sharptimer\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
+  "projectFilePath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.337\\counterstrikesharp.api.1.0.337.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\mcmaster.netcore.plugins\\1.4.0\\mcmaster.netcore.plugins.1.4.0.nupkg.sha512",

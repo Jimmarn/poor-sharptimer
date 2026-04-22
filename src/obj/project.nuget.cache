@@ -1,10 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "BnLi53FdgIk=",
+  "dgSpecHash": "C3O/4Fo6P9Q=",
   "success": true,
-  "projectFilePath": "C:\\sharptimer\\poor-sharptimer\\src\\SharpTimer.csproj",
+  "projectFilePath": "c:\\sharptimer\\cloned\\poor-sharptimer\\src\\SharpTimer.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.364\\counterstrikesharp.api.1.0.364.nupkg.sha512",
+    "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.366\\counterstrikesharp.api.1.0.366.nupkg.sha512",
+    "C:\\Users\\jimtm\\.nuget\\packages\\fastgenericnew\\3.3.1\\fastgenericnew.3.3.1.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\mcmaster.netcore.plugins\\1.4.0\\mcmaster.netcore.plugins.1.4.0.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\microsoft.data.sqlite\\8.0.8\\microsoft.data.sqlite.8.0.8.nupkg.sha512",
