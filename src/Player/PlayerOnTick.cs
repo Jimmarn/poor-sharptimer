@@ -365,10 +365,9 @@ namespace SharpTimer
             };
         }
 
-        // ──────────────────────────────────────────────────────────────────────
-        // ──────────────────────────────────────────────────────────────────────
-        // LAYOUT 1 — Trackmania-style with CP flash embedded in HTML (colored)
-        // ──────────────────────────────────────────────────────────────────────
+
+        // HUD 1 — Compact, CP flash enabled colorcoded.
+
         private string GetHudContentLayout1(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
             bool isTimerRunning      = playerTimer.IsTimerRunning;
@@ -480,9 +479,9 @@ namespace SharpTimer
                    (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "");
         }
 
-        // ──────────────────────────────────────────────────────────────────────
-        // LAYOUT 2 — Trackmania-style (plain, CP flash via PrintToCenter)
-        // ──────────────────────────────────────────────────────────────────────
+
+        // Hud 2 — Simple Close to Original CP flash white. 
+
         private string GetHudContentLayout2(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
             bool isTimerRunning    = playerTimer.IsTimerRunning;
@@ -564,10 +563,9 @@ namespace SharpTimer
                    (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "");
         }
 
-        // ──────────────────────────────────────────────────────────────────────
-        // ──────────────────────────────────────────────────────────────────────
+
         // LAYOUT 3 — experimental sprite-based layout
-        // ──────────────────────────────────────────────────────────────────────
+
         private const string SpriteBase = "https://raw.githubusercontent.com/Jimmarn/poor-sharptimer/refs/heads/main/";
 
         private static string LcdDigits(string number, string folder, string suffix, int height)
@@ -721,9 +719,9 @@ namespace SharpTimer
             return sb.ToString();
         }
 
-        // ──────────────────────────────────────────────────────────────────────
-        // LAYOUT 4 — original layout (preserved as-was)
-        // ──────────────────────────────────────────────────────────────────────
+       
+        // HUD 4 — original layout from P-ST
+       
         private string GetHudContentLayout4(PlayerTimerInfo playerTimer, CCSPlayerController player)
         {
             bool isTimerRunning    = playerTimer.IsTimerRunning;
@@ -798,9 +796,7 @@ namespace SharpTimer
                    (keyEnabled && !playerTimer.IsReplaying ? keysLineNoHtml : "");
         }
 
-        // ──────────────────────────────────────────────────────────────────────
         // Helpers shared by both layouts
-        // ──────────────────────────────────────────────────────────────────────
 
         /// <summary>Pads minutes to 2 digits and trims to centiseconds (MM:SS.cc — always 8 chars).</summary>
         private static string PadTimerFixed(string time)
