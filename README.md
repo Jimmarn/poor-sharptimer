@@ -2,7 +2,7 @@
 SharpTimer is a "simple" Surf/Bhop/MG/Deathrun/etc. CS2 Timer plugin using CounterStrikeSharp<br>
 
 > [!NOTE]
-> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. This fork is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob).
+> The original creator of SharpTimer is dea_bb, who discontinued support for the project after version 0.2.6. Which was forked and is now maintaned by the community, mainly [rcnoob](https://github.com/rcnoob). This is an edited version of that fork by me. 
 
 [**Discord**](https://discord.com/invite/SmQXeyMcny)
 

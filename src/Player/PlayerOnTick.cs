@@ -424,7 +424,7 @@ namespace SharpTimer
                     bool   speedFaster = speedDiff.StartsWith("+")
                                          ? int.TryParse(speedDiff.TrimStart('+'), out int sv) && sv > 0
                                          : int.TryParse(speedDiff, out int sv2) && sv2 > 0;
-                    string speedColor  = speedFaster ? "#3b992c" : "#9c5125";
+                    string speedColor  = speedFaster ? "#3b992c" : "#DA6E1B";
                     string speedArrow  = speedFaster ? "▲" : "▼";
                     flashLine +=
                         $"<font color='white'>{playerTimer.CheckpointFlashSpeed} u/s  </font>" +
