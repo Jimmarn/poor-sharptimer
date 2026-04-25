@@ -497,33 +497,6 @@ namespace SharpTimer
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, slot));
         }
 
-        [ConsoleCommand("css_hud1", "Switch to HUD layout 1 (clean default)")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void HUDLayout1Command(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsPlayerOrSpectator(player)) return;
-            playerTimers[player!.Slot].HudLayout = 1;
-            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}1 (clean default)");
-        }
-
-        [ConsoleCommand("css_hud2", "Switch to HUD layout 2 (experimental sprites)")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void HUDLayout2Command(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsPlayerOrSpectator(player)) return;
-            playerTimers[player!.Slot].HudLayout = 2;
-            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}2 (experimental sprites)");
-        }
-
-        [ConsoleCommand("css_hud3", "Switch to HUD layout 3 (original)")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        public void HUDLayout3Command(CCSPlayerController? player, CommandInfo command)
-        {
-            if (!IsPlayerOrSpectator(player)) return;
-            playerTimers[player!.Slot].HudLayout = 3;
-            Utils.PrintToChat(player, $" {ChatColors.Green}HUD layout set to: {ChatColors.White}3 (original)");
-        }
-
         [ConsoleCommand("css_keys", "Draws/Hides HUD Keys")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void KeysSwitchCommand(CCSPlayerController? player, CommandInfo command)
@@ -949,6 +922,31 @@ namespace SharpTimer
                     Utils.PrintToChat(player!, Localizer["current_sr_player", playerName!, Utils.FormatTime(timerTicks)]);
                 });
             }
+        }
+
+        [ConsoleCommand("css_first", "Shows who was the first to finish this map")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void FirstFinishCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsPlayerOrSpectator(player) || rankEnabled == false)
+                return;
+
+            if (CommandCooldown(player))
+                return;
+
+            _ = Task.Run(async () => await FirstFinishCommandHandler(player));
+        }
+
+        public async Task FirstFinishCommandHandler(CCSPlayerController? player)
+        {
+            if (!IsPlayerOrSpectator(player))
+                return;
+
+            int slot = player!.Slot;
+            string mode = playerTimers.TryGetValue(slot, out var pt) ? pt.Mode : "Standard";
+            int style = playerTimers.TryGetValue(slot, out var pt2) ? pt2.currentStyle : 0;
+
+            await PrintFirstFinishToChat(player!, currentMapName!, style, mode);
         }
 
         [ConsoleCommand("css_rb", "Teleports you to Bonus start")]

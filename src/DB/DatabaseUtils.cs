@@ -501,6 +501,182 @@ namespace SharpTimer
             }
         }
 
+        private async Task CreateMapFirstFinishTableAsync(IDbConnection connection)
+        {
+            DbCommand? createTableCommand;
+            string createTableQuery;
+            switch (dbType)
+            {
+                case DatabaseType.MySQL:
+                    createTableQuery = @"CREATE TABLE IF NOT EXISTS MapFirstFinish (
+                                            MapName VARCHAR(255),
+                                            SteamID VARCHAR(20),
+                                            PlayerName VARCHAR(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+                                            TimerTicks INT,
+                                            FormattedTime VARCHAR(255),
+                                            UnixStamp INT,
+                                            Style INT,
+                                            Mode VARCHAR(24) NOT NULL DEFAULT '',
+                                            PRIMARY KEY (MapName, Style, Mode)
+                                        )";
+                    createTableCommand = new MySqlCommand(createTableQuery, (MySqlConnection)connection);
+                    break;
+                case DatabaseType.PostgreSQL:
+                    createTableQuery = @"CREATE TABLE IF NOT EXISTS ""MapFirstFinish"" (
+                                            ""MapName"" VARCHAR(255),
+                                            ""SteamID"" VARCHAR(20),
+                                            ""PlayerName"" VARCHAR(32),
+                                            ""TimerTicks"" INT,
+                                            ""FormattedTime"" VARCHAR(255),
+                                            ""UnixStamp"" INT,
+                                            ""Style"" INT,
+                                            ""Mode"" VARCHAR(24) NOT NULL DEFAULT '',
+                                            PRIMARY KEY (""MapName"", ""Style"", ""Mode"")
+                                        )";
+                    createTableCommand = new NpgsqlCommand(createTableQuery, (NpgsqlConnection)connection);
+                    break;
+                case DatabaseType.SQLite:
+                    createTableQuery = @"CREATE TABLE IF NOT EXISTS MapFirstFinish (
+                                            MapName TEXT,
+                                            SteamID TEXT,
+                                            PlayerName TEXT,
+                                            TimerTicks INT,
+                                            FormattedTime TEXT,
+                                            UnixStamp INT,
+                                            Style INT,
+                                            Mode VARCHAR(24) NOT NULL DEFAULT '',
+                                            PRIMARY KEY (MapName, Style, Mode)
+                                        )";
+                    createTableCommand = new SqliteCommand(createTableQuery, (SqliteConnection)connection);
+                    break;
+                default:
+                    createTableCommand = null;
+                    break;
+            }
+            using (createTableCommand)
+            {
+                try { await createTableCommand!.ExecuteNonQueryAsync(); }
+                catch (Exception ex) { Utils.LogError($"Error in CreateMapFirstFinishTableAsync: {ex.Message}"); }
+            }
+        }
+
+        private async Task SaveMapFirstFinishToDatabase(string mapName, string steamId, string playerName,
+            int timerTicks, string formattedTime, int style, string mode)
+        {
+            try
+            {
+                using var connection = await OpenConnectionAsync();
+                await CreateMapFirstFinishTableAsync(connection);
+
+                int unixNow = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                string? insertQuery;
+                DbCommand? insertCommand;
+                switch (dbType)
+                {
+                    case DatabaseType.MySQL:
+                        insertQuery = @"INSERT IGNORE INTO MapFirstFinish
+                            (MapName, SteamID, PlayerName, TimerTicks, FormattedTime, UnixStamp, Style, Mode)
+                            VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @FormattedTime, @UnixStamp, @Style, @Mode)";
+                        insertCommand = new MySqlCommand(insertQuery, (MySqlConnection)connection);
+                        break;
+                    case DatabaseType.PostgreSQL:
+                        insertQuery = @"INSERT INTO ""MapFirstFinish""
+                            (""MapName"", ""SteamID"", ""PlayerName"", ""TimerTicks"", ""FormattedTime"", ""UnixStamp"", ""Style"", ""Mode"")
+                            VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @FormattedTime, @UnixStamp, @Style, @Mode)
+                            ON CONFLICT DO NOTHING";
+                        insertCommand = new NpgsqlCommand(insertQuery, (NpgsqlConnection)connection);
+                        break;
+                    case DatabaseType.SQLite:
+                        insertQuery = @"INSERT OR IGNORE INTO MapFirstFinish
+                            (MapName, SteamID, PlayerName, TimerTicks, FormattedTime, UnixStamp, Style, Mode)
+                            VALUES (@MapName, @SteamID, @PlayerName, @TimerTicks, @FormattedTime, @UnixStamp, @Style, @Mode)";
+                        insertCommand = new SqliteCommand(insertQuery, (SqliteConnection)connection);
+                        break;
+                    default:
+                        return;
+                }
+                using (insertCommand)
+                {
+                    insertCommand.AddParameterWithValue("@MapName", mapName);
+                    insertCommand.AddParameterWithValue("@SteamID", steamId);
+                    insertCommand.AddParameterWithValue("@PlayerName", playerName);
+                    insertCommand.AddParameterWithValue("@TimerTicks", timerTicks);
+                    insertCommand.AddParameterWithValue("@FormattedTime", formattedTime);
+                    insertCommand.AddParameterWithValue("@UnixStamp", unixNow);
+                    insertCommand.AddParameterWithValue("@Style", style);
+                    insertCommand.AddParameterWithValue("@Mode", mode);
+                    await insertCommand.ExecuteNonQueryAsync();
+                    Utils.LogDebug($"Saved MapFirstFinish for {playerName} on {mapName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError($"Error in SaveMapFirstFinishToDatabase: {ex.Message}");
+            }
+        }
+
+        public async Task PrintFirstFinishToChat(CCSPlayerController player, string mapName, int style, string mode)
+        {
+            try
+            {
+                using var connection = await OpenConnectionAsync();
+                await CreateMapFirstFinishTableAsync(connection);
+
+                string? selectQuery;
+                DbCommand? selectCommand;
+                switch (dbType)
+                {
+                    case DatabaseType.MySQL:
+                        selectQuery = @"SELECT PlayerName, FormattedTime, UnixStamp FROM MapFirstFinish
+                                        WHERE MapName = @MapName AND Style = @Style AND Mode = @Mode LIMIT 1";
+                        selectCommand = new MySqlCommand(selectQuery, (MySqlConnection)connection);
+                        break;
+                    case DatabaseType.PostgreSQL:
+                        selectQuery = @"SELECT ""PlayerName"", ""FormattedTime"", ""UnixStamp"" FROM ""MapFirstFinish""
+                                        WHERE ""MapName"" = @MapName AND ""Style"" = @Style AND ""Mode"" = @Mode LIMIT 1";
+                        selectCommand = new NpgsqlCommand(selectQuery, (NpgsqlConnection)connection);
+                        break;
+                    case DatabaseType.SQLite:
+                        selectQuery = @"SELECT PlayerName, FormattedTime, UnixStamp FROM MapFirstFinish
+                                        WHERE MapName = @MapName AND Style = @Style AND Mode = @Mode LIMIT 1";
+                        selectCommand = new SqliteCommand(selectQuery, (SqliteConnection)connection);
+                        break;
+                    default:
+                        return;
+                }
+
+                using (selectCommand)
+                {
+                    selectCommand.AddParameterWithValue("@MapName", mapName);
+                    selectCommand.AddParameterWithValue("@Style", style);
+                    selectCommand.AddParameterWithValue("@Mode", mode);
+
+                    using var reader = await selectCommand.ExecuteReaderAsync();
+                    if (reader.Read())
+                    {
+                        string firstName = reader.GetString("PlayerName");
+                        string firstTime = reader.GetString("FormattedTime");
+                        int unixStamp = reader.GetInt32("UnixStamp");
+                        string date = DateTimeOffset.FromUnixTimeSeconds(unixStamp).ToString("yyyy-MM-dd");
+                        Server.NextFrame(() =>
+                        {
+                            Utils.PrintToChat(player, $" 🏆 First finish on {mapName}:");
+                            Utils.PrintToChat(player, $" {firstName} — {firstTime} ({date})");
+                        });
+                    }
+                    else
+                    {
+                        Server.NextFrame(() =>
+                            Utils.PrintToChat(player, $" No first finish recorded for {mapName} yet."));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError($"Error in PrintFirstFinishToChat: {ex.Message}");
+            }
+        }
+
         private async Task UpdateTableColumnsAsync(IDbConnection connection, string tableName, string[] columns)
         {
             if (await TableExistsAsync(connection, tableName))
@@ -1212,6 +1388,7 @@ namespace SharpTimer
                                 {
                                     Utils.PrintToChatAll($" \x10🏆 \x01{playerName}\x10 was the first to finish \x01{mapDisplay}\x10! Time: \x06{formattedTime}");
                                 });
+                                _ = Task.Run(async () => await SaveMapFirstFinishToDatabase(currentMapNamee, steamId, playerName, timerTicks, formattedTime, style, mode));
                                 _ = Task.Run(async () => await DiscordFirstFinishMessage(player!, playerName, formattedTime, steamId, bonusX));
                             }
                             // ────────────────────────────────────────────────────────────
