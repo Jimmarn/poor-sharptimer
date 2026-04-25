@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "C3O/4Fo6P9Q=",
+  "dgSpecHash": "K2mtH9cEBAU=",
   "success": true,
-  "projectFilePath": "c:\\sharptimer\\cloned\\poor-sharptimer\\src\\SharpTimer.csproj",
+  "projectFilePath": "C:\\sharptimer\\cloned\\poor-sharptimer\\src\\SharpTimer.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.366\\counterstrikesharp.api.1.0.366.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\fastgenericnew\\3.3.1\\fastgenericnew.3.3.1.nupkg.sha512",

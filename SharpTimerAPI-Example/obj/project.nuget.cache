@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "UZP0Vms+HOE=",
+  "dgSpecHash": "sc7gQKQ/ta4=",
   "success": true,
-  "projectFilePath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
+  "projectFilePath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.366\\counterstrikesharp.api.1.0.366.nupkg.sha512",
+    "C:\\Users\\jimtm\\.nuget\\packages\\counterstrikesharp.api\\1.0.367\\counterstrikesharp.api.1.0.367.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\fastgenericnew\\3.3.1\\fastgenericnew.3.3.1.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\mcmaster.netcore.plugins\\1.4.0\\mcmaster.netcore.plugins.1.4.0.nupkg.sha512",
     "C:\\Users\\jimtm\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",

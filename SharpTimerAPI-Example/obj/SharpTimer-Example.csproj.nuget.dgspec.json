@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj": {}
+    "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj": {}
   },
   "projects": {
-    "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj": {
+    "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
+        "projectUniqueName": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
         "projectName": "SharpTimer-Example",
-        "projectPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
+        "projectPath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\SharpTimer-Example.csproj",
         "packagesPath": "C:\\Users\\jimtm\\.nuget\\packages\\",
-        "outputPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\obj\\",
+        "outputPath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI-Example\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -32,8 +32,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
-                "projectPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj"
+              "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
+                "projectPath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj"
               }
             }
           }
@@ -78,14 +78,14 @@
         }
       }
     },
-    "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
+    "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
+        "projectUniqueName": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
         "projectName": "SharpTimerAPI",
-        "projectPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
+        "projectPath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\SharpTimerAPI.csproj",
         "packagesPath": "C:\\Users\\jimtm\\.nuget\\packages\\",
-        "outputPath": "c:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\obj\\",
+        "outputPath": "C:\\sharptimer\\cloned\\poor-sharptimer\\SharpTimerAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

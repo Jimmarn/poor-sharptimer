@@ -57,6 +57,7 @@ namespace SharpTimer
                     discordSRWebhookUrl = GetPropertyValue("DiscordSRWebhookUrl", "", prop => prop.GetString() ?? "");
                     discordPBBonusWebhookUrl = GetPropertyValue("DiscordPBBonusWebhookUrl", "", prop => prop.GetString() ?? "");
                     discordSRBonusWebhookUrl = GetPropertyValue("DiscordSRBonusWebhookUrl", "", prop => prop.GetString() ?? "");
+                    discordFirstFinishWebhookUrl = GetPropertyValue("DiscordFirstFinishWebhookUrl", "", prop => prop.GetString() ?? "");
                     discordWebhookFooter = GetPropertyValue("DiscordFooterString", "", prop => prop.GetString() ?? "");
                     discordWebhookRareGif = GetPropertyValue("DiscordRareGifUrl", "", prop => prop.GetString() ?? "");
                     
@@ -427,6 +428,65 @@ namespace SharpTimer
             {
                 Utils.LogError("GetAvatarLink Error occurred: " + ex.Message);
                 return "https://cdn.discordapp.com/icons/1196646791450472488/634963a8207fdb1b30bf909d31f05e57.webp";
+            }
+        }
+
+        public async Task DiscordFirstFinishMessage(CCSPlayerController player, string playerName, string runTime, string steamID, int bonusX = 0)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(discordFirstFinishWebhookUrl))
+                    return;
+
+                string mapImg = await GetMapImage(bonusX);
+                string mapDisplay = bonusX == 0 ? (currentMapName ?? "") : $"{currentMapName} bonus #{bonusX}";
+
+                var fields = new List<object>
+                {
+                    new { name = "🗺️ Map:", value = mapDisplay, inline = true },
+                    new { name = "⌛ Time:", value = runTime, inline = true },
+                    new { name = "\u200B", value = "\u200B", inline = true }
+                };
+
+                if (discordWebhookTier && currentMapTier != null)
+                    fields.Add(new { name = "🔰 Tier:", value = currentMapTier, inline = true });
+
+                if (discordWebhookSteamLink && !string.IsNullOrEmpty(steamID))
+                    fields.Add(new { name = "🛈 Steam:", value = $"[Profile](https://steamcommunity.com/profiles/{steamID})", inline = true });
+
+                var embed = new Dictionary<string, object>
+                {
+                    { "title", "🏆 First ever finish on this map!" },
+                    { "fields", fields.ToArray() },
+                    { "author", new { name = playerName, url = $"https://steamcommunity.com/profiles/{steamID}" } },
+                    { "footer", new { text = discordWebhookFooter, icon_url = discordWebhookPFPUrl } },
+                    { "color", 16766720 }, // gold
+                    { "image", new { url = mapImg } }
+                };
+
+                if (discordWebhookSteamAvatar)
+                    embed["thumbnail"] = new { url = await GetAvatarLink($"https://steamcommunity.com/profiles/{steamID}/?xml=1") };
+
+                var payload = new
+                {
+                    content = (string?)null,
+                    embeds = new[] { embed },
+                    username = discordWebhookBotName,
+                    avatar_url = discordWebhookPFPUrl,
+                    attachments = Array.Empty<object>()
+                };
+
+                var json = JsonSerializer.Serialize(payload);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                using var client = new HttpClient();
+                var response = await client.PostAsync(discordFirstFinishWebhookUrl, content);
+                if (response.StatusCode != HttpStatusCode.NoContent)
+                    Utils.LogError($"DiscordFirstFinishMessage - Error: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Utils.LogError($"DiscordFirstFinishMessage error: {ex.Message}");
             }
         }
     }

@@ -1102,6 +1102,43 @@ namespace SharpTimer
                         Server.NextFrame(() => Utils.LogDebug($"No player record yet"));
                         await row.CloseAsync();
 
+                        // ── CHECK IF THIS IS THE FIRST EVER FINISH ON THE MAP ──────────
+                        bool isMapFirstFinish = false;
+                        try
+                        {
+                            string? countQuery = null;
+                            DbCommand? countCommand = null;
+                            switch (dbType)
+                            {
+                                case DatabaseType.MySQL:
+                                    countQuery = @"SELECT COUNT(*) FROM PlayerRecords WHERE MapName = @MapName AND Style = @Style AND Mode = @Mode";
+                                    countCommand = new MySqlCommand(countQuery, (MySqlConnection)connection);
+                                    break;
+                                case DatabaseType.PostgreSQL:
+                                    countQuery = @"SELECT COUNT(*) FROM ""PlayerRecords"" WHERE ""MapName"" = @MapName AND ""Style"" = @Style AND ""Mode"" = @Mode";
+                                    countCommand = new NpgsqlCommand(countQuery, (NpgsqlConnection)connection);
+                                    break;
+                                case DatabaseType.SQLite:
+                                    countQuery = @"SELECT COUNT(*) FROM PlayerRecords WHERE MapName = @MapName AND Style = @Style AND Mode = @Mode";
+                                    countCommand = new SqliteCommand(countQuery, (SqliteConnection)connection);
+                                    break;
+                            }
+                            if (countCommand != null)
+                            {
+                                countCommand.AddParameterWithValue("@MapName", currentMapNamee);
+                                countCommand.AddParameterWithValue("@Style", style);
+                                countCommand.AddParameterWithValue("@Mode", mode);
+                                var countResult = await countCommand.ExecuteScalarAsync();
+                                isMapFirstFinish = Convert.ToInt64(countResult) == 0;
+                                countCommand.Dispose();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Utils.LogError($"Error checking first finish count: {ex.Message}");
+                        }
+                        // ────────────────────────────────────────────────────────────────
+
                         string? upsertQuery;
                         DbCommand? upsertCommand;
                         switch (dbType)
@@ -1166,6 +1203,18 @@ namespace SharpTimer
                                 Server.NextFrame(() => _ = Task.Run(async () => await PrintMapTimeToChat(player!,
                                     steamId, playerName, dBtimerTicks, timerTicks, bonusX, 1, style, prevSRTimerTicks, mode)));
                             }
+
+                            // ── FIRST EVER FINISH ANNOUNCEMENT ──────────────────────────
+                            if (isMapFirstFinish && bonusX == 0)
+                            {
+                                string mapDisplay = currentMapName ?? "this map";
+                                Server.NextFrame(() =>
+                                {
+                                    Utils.PrintToChatAll($" \x10🏆 \x01{playerName}\x10 was the first to finish \x01{mapDisplay}\x10! Time: \x06{formattedTime}");
+                                });
+                                _ = Task.Run(async () => await DiscordFirstFinishMessage(player!, playerName, formattedTime, steamId, bonusX));
+                            }
+                            // ────────────────────────────────────────────────────────────
 
                             if (enableReplays)
                             {
