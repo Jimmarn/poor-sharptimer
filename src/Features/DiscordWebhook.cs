@@ -92,7 +92,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task DiscordRecordMessage(CCSPlayerController? player, string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0)
+        public async Task DiscordRecordMessage(CCSPlayerController? player, string playerName, string runTime, string steamID, string placement, int timesFinished, bool isSR = false, string timeDifference = "", int bonusX = 0, string mode = "")
         {
             try
             {
@@ -190,6 +190,15 @@ namespace SharpTimer
                     });
                 }
 
+                if (!string.IsNullOrEmpty(mode))
+                {
+                    fields.Add(new
+                    {
+                        name = "🌐 Mode:",
+                        value = mode,
+                        inline = true
+                    });
+                }
                 if (!discordWebhookDisableStyleRecords && !string.IsNullOrEmpty(style))
                 {
                     fields.Add(new
@@ -431,7 +440,7 @@ namespace SharpTimer
             }
         }
 
-        public async Task DiscordFirstFinishMessage(CCSPlayerController player, string playerName, string runTime, string steamID, int bonusX = 0)
+        public async Task DiscordFirstFinishMessage(CCSPlayerController player, string playerName, string runTime, string steamID, int bonusX = 0, string mode = "")
         {
             try
             {
@@ -451,6 +460,9 @@ namespace SharpTimer
                 if (discordWebhookTier && currentMapTier != null)
                     fields.Add(new { name = "🔰 Tier:", value = currentMapTier, inline = true });
 
+                if (!string.IsNullOrEmpty(mode))
+                    fields.Add(new { name = "🌐 Mode:", value = mode, inline = true });
+
                 if (discordWebhookSteamLink && !string.IsNullOrEmpty(steamID))
                     fields.Add(new { name = "🛈 Steam:", value = $"[Profile](https://steamcommunity.com/profiles/{steamID})", inline = true });
 
@@ -460,7 +472,7 @@ namespace SharpTimer
                     { "fields", fields.ToArray() },
                     { "author", new { name = playerName, url = $"https://steamcommunity.com/profiles/{steamID}" } },
                     { "footer", new { text = discordWebhookFooter, icon_url = discordWebhookPFPUrl } },
-                    { "color", 16766720 }, // gold
+                    { "color", 16766720 },
                     { "image", new { url = mapImg } }
                 };
 
@@ -478,7 +490,6 @@ namespace SharpTimer
 
                 var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
                 using var client = new HttpClient();
                 var response = await client.PostAsync(discordFirstFinishWebhookUrl, content);
                 if (response.StatusCode != HttpStatusCode.NoContent)

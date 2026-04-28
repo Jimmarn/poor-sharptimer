@@ -182,6 +182,48 @@ namespace SharpTimer
             }
         }
 
+        // HUD display: zero-padded number only, no unit label (label goes in the "Speed" spot).
+        // km/h → 3 digits ("000"), u/s → 4 digits ("0000").
+        private static string FormatSpeed(float speedUps, bool kmh)
+        {
+            if (kmh)
+                return $"{(int)(speedUps * 0.09144f):000}";
+            return $"{(int)speedUps:0000}";
+        }
+
+        // HUD checkpoint diff: converted number only, no unit (used alongside FormatSpeed).
+        private static string FormatSpeedDiff(string diffUps, bool kmh)
+        {
+            if (!kmh) return diffUps;
+            bool hasPlus = diffUps.StartsWith("+");
+            if (float.TryParse(diffUps.TrimStart('+'), out float val))
+                return $"{(hasPlus ? "+" : "")}{(int)Math.Round(Math.Abs(val) * 0.09144f)}";
+            return diffUps;
+        }
+
+        // Chat display: converts a stored u/s speed string and appends the unit label.
+        private static string FormatSpeedChat(string speedUpsStr, bool kmh)
+        {
+            if (!float.TryParse(speedUpsStr, out float val)) return speedUpsStr;
+            if (kmh) return $"{(int)Math.Round(val * 0.09144f)} km/h";
+            return $"{(int)val} u/s";
+        }
+
+        // Chat display: converts a u/s diff string (e.g. "+42", "-15") and appends the unit label.
+        private static string FormatSpeedDiffChat(string diffUps, bool kmh)
+        {
+            if (!kmh) return $"{diffUps} u/s";
+            // FormatSpeedDifferenceFromString may prefix with a ChatColors char — find the numeric part.
+            var match = System.Text.RegularExpressions.Regex.Match(diffUps, @"([+-]?\d+)");
+            if (match.Success && float.TryParse(match.Groups[1].Value, out float val))
+            {
+                string colorPrefix = diffUps.Substring(0, match.Index); // preserve any leading color code
+                string sign = val >= 0 ? "+" : "-";
+                return $"{colorPrefix}{sign}{(int)Math.Round(Math.Abs(val) * 0.09144f)} km/h";
+            }
+            return $"{diffUps} km/h";
+        }
+
         private string GetCurrentPlayerSpeed(CCSPlayerController player)
         {
             var playerPawn = player.PlayerPawn();
@@ -202,11 +244,13 @@ namespace SharpTimer
         {
             int startSpeed = int.Parse(GetCurrentPlayerSpeed(player));
             int printSpeed = (maxStartingSpeedEnabled && startSpeed > maxStartingSpeed) ? maxStartingSpeed : startSpeed;
+            bool kmh = playerTimers[player.Slot].SpeedUnitKmh;
+            string speedDisplay = FormatSpeedChat(printSpeed.ToString(), kmh);
             if (!playerTimers[player.Slot].HideChatSpeed)
             {
-                Utils.PrintToChat(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+                Utils.PrintToChat(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{speedDisplay}");
             }
-            Utils.PrintToSpec(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{printSpeed}");
+            Utils.PrintToSpec(player, $"{Localizer["start_speed"]} {ChatColors.Olive}{speedDisplay}");
         }
       
         private void RemovePlayerCollision(CCSPlayerController? player)
@@ -676,20 +720,20 @@ namespace SharpTimer
                         Utils.PrintToChatAll(Localizer["new_server_record", playerName]);
                         PlaySound(player, srSound, srSoundAll);
                     }
-                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintSR && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, true, timeDifferenceNoCol, bonusX, mode));
                 }
                 else if (beatPB)
                 {
                     if (bonusX != 0) Utils.PrintToChatAll(Localizer["new_pb_record_bonus", playerName, bonusX]);
                     else Utils.PrintToChatAll(Localizer["new_pb_record", playerName]);
-                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintPB && discordWebhookEnabled && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX, mode));
                     PlaySound(player, pbSound);
                 }
                 else
                 {
                     if (bonusX != 0) Utils.PrintToChatAll(Localizer["map_finish_bonus", playerName, bonusX]);
                     else Utils.PrintToChatAll(Localizer["map_finish", playerName]);
-                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX));
+                    if (discordWebhookPrintPB && discordWebhookEnabled && timesFinished == 1 && enableDb) _ = Task.Run(async () => await DiscordRecordMessage(player, playerName, newTime, steamID, ranking, timesFinished, false, timeDifferenceNoCol, bonusX, mode));
                     PlaySound(player, timerSound);
                 }
 

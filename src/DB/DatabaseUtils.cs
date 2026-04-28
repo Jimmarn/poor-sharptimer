@@ -660,7 +660,7 @@ namespace SharpTimer
                         string date = DateTimeOffset.FromUnixTimeSeconds(unixStamp).ToString("yyyy-MM-dd");
                         Server.NextFrame(() =>
                         {
-                            Utils.PrintToChat(player, $" 🏆 First finish on {mapName}:");
+                            Utils.PrintToChat(player, $" 🏆 First finish on {mapName} in {mode}:");
                             Utils.PrintToChat(player, $" {firstName} — {firstTime} ({date})");
                         });
                     }
@@ -1389,7 +1389,7 @@ namespace SharpTimer
                                     Utils.PrintToChatAll($" \x10🏆 \x01{playerName}\x10 was the first to finish \x01{mapDisplay}\x10! Time: \x06{formattedTime}");
                                 });
                                 _ = Task.Run(async () => await SaveMapFirstFinishToDatabase(currentMapNamee, steamId, playerName, timerTicks, formattedTime, style, mode));
-                                _ = Task.Run(async () => await DiscordFirstFinishMessage(player!, playerName, formattedTime, steamId, bonusX));
+                                _ = Task.Run(async () => await DiscordFirstFinishMessage(player!, playerName, formattedTime, steamId, bonusX, mode));
                             }
                             // ────────────────────────────────────────────────────────────
 

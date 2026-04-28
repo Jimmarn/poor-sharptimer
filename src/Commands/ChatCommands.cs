@@ -526,6 +526,20 @@ namespace SharpTimer
                 _ = Task.Run(async () => await SetPlayerStats(player, steamID, playerName, slot));
         }
 
+        [ConsoleCommand("css_stunits", "Toggle speed display between km/h and u/s")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void SpeedUnitsSwitchCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsPlayerOrSpectator(player))
+                return;
+
+            var slot = player!.Slot;
+
+            playerTimers[slot].SpeedUnitKmh = !playerTimers[slot].SpeedUnitKmh;
+            string unit = playerTimers[slot].SpeedUnitKmh ? "km/h" : "u/s";
+            Utils.PrintToChat(player, $" Speed unit set to {ChatColors.Yellow}{unit}");
+        }
+
         [ConsoleCommand("css_sounds", "Toggles Sounds")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SoundsSwitchCommand(CCSPlayerController? player, CommandInfo command)

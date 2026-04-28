@@ -190,6 +190,7 @@ namespace SharpTimer
         public int GoodSync { get; set; }
         public int TotalSync { get; set; }
         public List<QAngle_t> Rotation { get; set; } = new List<QAngle_t>();
+        public bool SpeedUnitKmh { get; set; } = true; // default to km/h
 
         //player settings/stats
         public bool Azerty { get; set; }

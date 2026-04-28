@@ -102,7 +102,7 @@ public partial class SharpTimer
         });
         playerTimers[player.Slot].RespawnPos = "";
         playerTimers[player.Slot].BonusRespawnPos = "";
-        ApplyModeSettings(player, mode);
+        //ApplyModeSettings(player, mode);
     }
 
     private void ApplyModeSettings(CCSPlayerController player, Mode mode)

@@ -333,7 +333,11 @@ namespace SharpTimer
                                                      : int.TryParse(speedDiff, out int sv2) && sv2 > 0;
                                 string speedColor = speedFaster ? "#66BB6A" : "#FFA726"; // green = faster, orange = slower
                                 string speedArrow = speedFaster ? "▲" : "▼";
-                                speedHtml = $"<br><font color='{speedColor}'>{playerTimer.CheckpointFlashSpeed} u/s  {speedArrow} {speedDiff}</font>";
+                                string cpSpeed = float.TryParse(playerTimer.CheckpointFlashSpeed, out float cpSpeedVal)
+                                    ? FormatSpeed(cpSpeedVal, playerTimer.SpeedUnitKmh)
+                                    : playerTimer.CheckpointFlashSpeed;
+                                string cpDiff = FormatSpeedDiff(speedDiff, playerTimer.SpeedUnitKmh);
+                                speedHtml = $"<br><font color='{speedColor}'>{cpSpeed}  {speedArrow} {cpDiff}</font>";
                             }
 
                             player.PrintToCenter(
@@ -378,12 +382,9 @@ namespace SharpTimer
             bool keyEnabled          = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
             bool hudEnabled          = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-            string formattedPlayerVel = Math.Round(use2DSpeed
-                ? playerSpeed.Length2D()
-                : playerSpeed.Length())
-                .ToString("0000");
-
-            int playerVel = int.Parse(formattedPlayerVel);
+            float rawSpeed1 = (float)Math.Round(use2DSpeed ? playerSpeed.Length2D() : playerSpeed.Length());
+            int playerVel = (int)rawSpeed1;
+            string formattedPlayerVel = FormatSpeed(rawSpeed1, playerTimer.SpeedUnitKmh);
 
             string secondaryHUDcolorDynamic = "LimeGreen";
             int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
@@ -426,9 +427,13 @@ namespace SharpTimer
                                          : int.TryParse(speedDiff, out int sv2) && sv2 > 0;
                     string speedColor  = speedFaster ? "#3b992c" : "#DA6E1B";
                     string speedArrow  = speedFaster ? "▲" : "▼";
+                    string cpFlashSpeed = float.TryParse(playerTimer.CheckpointFlashSpeed, out float cpFVal)
+                        ? FormatSpeed(cpFVal, playerTimer.SpeedUnitKmh)
+                        : playerTimer.CheckpointFlashSpeed;
+                    string cpFlashDiff = FormatSpeedDiff(speedDiff, playerTimer.SpeedUnitKmh);
                     flashLine +=
-                        $"<font color='white'>{playerTimer.CheckpointFlashSpeed} u/s  </font>" +
-                        $"<font color='{speedColor}'>{speedArrow} {speedDiff}</font><br>";
+                        $"<font color='white'>{cpFlashSpeed}  </font>" +
+                        $"<font color='{speedColor}'>{speedArrow} {cpFlashDiff}</font><br>";
                 }
                 flashLine += "</div>";
             }
@@ -446,11 +451,11 @@ namespace SharpTimer
 
             string veloLine =
                 $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}" +
-                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   Speed </font> " +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   {(playerTimer.SpeedUnitKmh ? "km/h" : "u/s")} </font> " +
                 $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color=' {playerVelColor}'>{formattedPlayerVel}</font> ";
 
             string syncLine =
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F2}%</font> " +
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F0}%</font> " +
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
 
             string infoLine =
@@ -492,13 +497,9 @@ namespace SharpTimer
             bool keyEnabled        = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
             bool hudEnabled        = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-            string formattedPlayerVel = Math.Round(use2DSpeed
-                ? playerSpeed.Length2D()
-                : playerSpeed.Length())
-                .ToString("0000");
-
-            int playerVel = int.Parse(formattedPlayerVel);
-
+            float rawSpeed2 = (float)Math.Round(use2DSpeed ? playerSpeed.Length2D() : playerSpeed.Length());
+            int playerVel = (int)rawSpeed2;
+            string formattedPlayerVel = FormatSpeed(rawSpeed2, playerTimer.SpeedUnitKmh);
             string secondaryHUDcolorDynamic = "LimeGreen";
             int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
             string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
@@ -530,12 +531,12 @@ namespace SharpTimer
             string veloLine =
                 $" {(playerTimer.IsTester ? playerTimer.TesterSmolGif : "")}" +
                 
-                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   Speed </font> " +
+                $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>   {(playerTimer.SpeedUnitKmh ? "km/h" : "u/s")} </font> " +
                 $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color=' {playerVelColor}'>{formattedPlayerVel}</font> " ;
                 
 
             string syncLine =
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F2}%</font> " +
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F0}%</font> " +
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
 
             string infoLine = 
@@ -629,7 +630,8 @@ namespace SharpTimer
             if (!hudEnabled && !keyEnabled) return "";
 
             int iVel    = (int)Math.Round(use2DSpeed ? vel.Length2D() : vel.Length());
-            string fmtVel = iVel.ToString("0000");  // always 4 digits: 0260
+            int iVelDisplay = playerTimer.SpeedUnitKmh ? (int)Math.Round(iVel * 0.09144f) : iVel;
+            string fmtVel = iVelDisplay.ToString("0000");  // 4 digits for sprites; unit follows SpeedUnitKmh
             string fmtPre = ((int)Math.Round(Utils.ParseVector_t(playerTimer.PreSpeed ?? "0 0 0").Length2D())).ToString("0000");
             // Timer: fixed width by always zero-padding minutes to 2 digits → "00:04.521"
             // Empty string when not running (not replaying, not bonus) — same as original behavior
@@ -640,8 +642,8 @@ namespace SharpTimer
                 playerTime = PadTimerFixed(Utils.FormatTime(playerTimer.BonusTimerTicks));
             else if (playerTimer.IsReplaying)
                 playerTime = PadTimerFixed(Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame));
-            // sync always 5 chars: 00.00 – 99.99 (cap at 99.99 to avoid 6-char 100.00)
-            string syncStr = playerTimer.Sync >= 99.995 ? "99.99" : playerTimer.Sync.ToString("00.00");
+            // sync always 3 chars: 000–100
+            string syncStr = ((int)Math.Round(Math.Min(playerTimer.Sync, 100f))).ToString("000");
 
             var sb = new System.Text.StringBuilder();
 
@@ -732,13 +734,9 @@ namespace SharpTimer
             bool keyEnabled        = !playerTimer.HideKeys && !playerTimer.IsReplaying && keysOverlayEnabled;
             bool hudEnabled        = !playerTimer.HideTimerHud && hudOverlayEnabled;
 
-            string formattedPlayerVel = Math.Round(use2DSpeed
-                ? playerSpeed.Length2D()
-                : playerSpeed.Length())
-                .ToString("0000");
-
-            int playerVel = int.Parse(formattedPlayerVel);
-
+            float rawSpeed4 = (float)Math.Round(use2DSpeed ? playerSpeed.Length2D() : playerSpeed.Length());
+            int playerVel = (int)rawSpeed4;
+            string formattedPlayerVel = FormatSpeed(rawSpeed4, playerTimer.SpeedUnitKmh);
             string secondaryHUDcolorDynamic = "LimeGreen";
             int[] velocityThresholds = { 349, 699, 1049, 1399, 1749, 2099, 2449, 2799, 3149, 3499 };
             string[] hudColors = { "LimeGreen", "Lime", "GreenYellow", "Yellow", "Gold", "Orange", "DarkOrange", "Tomato", "OrangeRed", "Red", "Crimson" };
@@ -773,7 +771,7 @@ namespace SharpTimer
 
             string syncLine =
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> " +
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>{playerTimer.Sync:F2}%</font> <br>";
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>{playerTimer.Sync:F0}%</font> <br>";
 
             string infoLine = playerTimer.CurrentZoneInfo.InBonusStartZone
                 ? GetBonusInfoLine(playerTimer)
