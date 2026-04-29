@@ -202,7 +202,7 @@ namespace SharpTimer
                         if (!IsAllowedPlayer(player)) return;
                         if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                         {
-                            if (playerTimer == null || playerTimer.CurrentMapStage != stageTrigger) return;
+                            if (playerTimer == null || playerTimer.CurrentMapStage == stageTrigger) return;
                             //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
                             
                             if (previousStageTime != 0)
@@ -268,7 +268,7 @@ namespace SharpTimer
                                 playerTimer.CheckpointFlashSpeedDiff = speedDiff;
                             }
 
-                            playerTimer.CurrentMapStage++;
+                            // CurrentMapStage already set to stageTrigger before the async awaits — no increment needed.
                             playerTimer.StageTicks = 0;
                         }
                     });
