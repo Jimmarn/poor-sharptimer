@@ -1183,6 +1183,23 @@ namespace SharpTimer
             use2DSpeed = bool.TryParse(args, out bool use2DSpeedValue) ? use2DSpeedValue : args != "0" && use2DSpeed;
         }
 
+        [ConsoleCommand("sharptimer_default_speed_unit_kmh", "Default speed unit for new players: true = km/h, false = u/s. Default value: true")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerDefaultSpeedUnitConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString;
+            PlayerTimerInfo.DefaultSpeedUnitKmh = bool.TryParse(args, out bool val) ? val : args != "0";
+        }
+
+        [ConsoleCommand("sharptimer_default_sync_decimals", "Default sync display precision for new players: 0, 1, or 2. Default value: 2")]
+        [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
+        public void SharpTimerDefaultSyncDecimalsConvar(CCSPlayerController? player, CommandInfo command)
+        {
+            string args = command.ArgString.Trim();
+            if (int.TryParse(args, out int val) && val >= 0 && val <= 2)
+                PlayerTimerInfo.DefaultSyncDecimals = val;
+        }
+
         [ConsoleCommand("sharptimer_override_beam_colors_enabled", "Default value: false")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY)]
         public void SharpTimerBeamColorsConvar(CCSPlayerController? player, CommandInfo command)

@@ -540,6 +540,25 @@ namespace SharpTimer
             Utils.PrintToChat(player, $" Speed unit set to {ChatColors.Yellow}{unit}");
         }
 
+        [ConsoleCommand("css_syncp", "Cycle sync display precision: 0 → 1 → 2 decimal places")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        public void SyncPrecisionCommand(CCSPlayerController? player, CommandInfo command)
+        {
+            if (!IsPlayerOrSpectator(player))
+                return;
+
+            var slot = player!.Slot;
+
+            playerTimers[slot].SyncDecimals = (playerTimers[slot].SyncDecimals + 1) % 3;
+            string label = playerTimers[slot].SyncDecimals switch
+            {
+                1 => "1 decimal (e.g. 83.4%)",
+                2 => "2 decimals (e.g. 83.40%)",
+                _ => "no decimals (e.g. 83%)",
+            };
+            Utils.PrintToChat(player, $" Sync precision set to {ChatColors.Yellow}{label}");
+        }
+
         [ConsoleCommand("css_sounds", "Toggles Sounds")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
         public void SoundsSwitchCommand(CCSPlayerController? player, CommandInfo command)

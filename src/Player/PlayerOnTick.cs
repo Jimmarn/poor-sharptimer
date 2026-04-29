@@ -455,7 +455,7 @@ namespace SharpTimer
                 $"{(playerTimer.IsReplaying ? "<font class=''" : "<font class='fontSize-l horizontal-center'")} color=' {playerVelColor}'>{formattedPlayerVel}</font> ";
 
             string syncLine =
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F0}%</font> " +
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync.ToString(playerTimer.SyncDecimals == 0 ? "F0" : playerTimer.SyncDecimals == 1 ? "F1" : "F2")}%</font> " +
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
 
             string infoLine =
@@ -536,7 +536,7 @@ namespace SharpTimer
                 
 
             string syncLine =
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync:F0}%</font> " +
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>| {playerTimer.Sync.ToString(playerTimer.SyncDecimals == 0 ? "F0" : playerTimer.SyncDecimals == 1 ? "F1" : "F2")}%</font> " +
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'> Sync</font> <br>";
 
             string infoLine = 
@@ -642,8 +642,13 @@ namespace SharpTimer
                 playerTime = PadTimerFixed(Utils.FormatTime(playerTimer.BonusTimerTicks));
             else if (playerTimer.IsReplaying)
                 playerTime = PadTimerFixed(Utils.FormatTime(playerReplays[player.Slot].CurrentPlaybackFrame));
-            // sync always 3 chars: 000–100
-            string syncStr = ((int)Math.Round(Math.Min(playerTimer.Sync, 100f))).ToString("000");
+            // sync width depends on SyncDecimals: 0→"000", 1→"00.0", 2→"00.00" (capped at 100/99.9/99.99)
+            string syncStr = playerTimer.SyncDecimals switch
+            {
+                1 => (playerTimer.Sync >= 99.95f  ? "99.9"  : playerTimer.Sync.ToString("00.0")),
+                2 => (playerTimer.Sync >= 99.995f ? "99.99" : playerTimer.Sync.ToString("00.00")),
+                _ => ((int)Math.Round(Math.Min(playerTimer.Sync, 100f))).ToString("000"),
+            };
 
             var sb = new System.Text.StringBuilder();
 
@@ -771,7 +776,7 @@ namespace SharpTimer
 
             string syncLine =
                 $"<font class='fontSize-s stratum-bold-italic' color='{tertiaryHUDcolor}'>Sync:</font> " +
-                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>{playerTimer.Sync:F0}%</font> <br>";
+                $"<font class='fontSize-l horizontal-center' color='{secondaryHUDcolor}'>{playerTimer.Sync.ToString(playerTimer.SyncDecimals == 0 ? "F0" : playerTimer.SyncDecimals == 1 ? "F1" : "F2")}%</font> <br>";
 
             string infoLine = playerTimer.CurrentZoneInfo.InBonusStartZone
                 ? GetBonusInfoLine(playerTimer)

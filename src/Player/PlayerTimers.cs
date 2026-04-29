@@ -188,7 +188,10 @@ namespace SharpTimer
 
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[slot] == null || playerTimers[slot].CurrentMapStage == stageTrigger) return;
-                    
+
+                    // Claim this stage immediately to prevent duplicate triggers firing during the async DB awaits below.
+                    playerTimers[slot].CurrentMapStage = stageTrigger;
+
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(prevStage, style, mode);
 
                     var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(prevStage, playerSteamID, style, mode);
@@ -199,7 +202,7 @@ namespace SharpTimer
                         if (!IsAllowedPlayer(player)) return;
                         if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                         {
-                            if (playerTimer == null || playerTimer.CurrentMapStage == stageTrigger) return;
+                            if (playerTimer == null || playerTimer.CurrentMapStage != stageTrigger) return;
                             //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
                             
                             if (previousStageTime != 0)
@@ -429,6 +432,9 @@ namespace SharpTimer
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     
                     if (playerTimers[slot] == null || playerTimers[slot].CurrentMapCheckpoint == bonusCheckpointTrigger) return;
+
+                    // Claim this checkpoint immediately to prevent duplicate triggers during the async DB awaits below.
+                    playerTimers[slot].CurrentMapCheckpoint = bonusCheckpointTrigger;
 
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(bonusCheckpointTrigger, style, mode);
                     var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID, style, mode);
