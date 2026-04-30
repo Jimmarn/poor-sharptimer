@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SharpTimer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c46492a9b8d9f439e34bc2628ee646192d5d40e9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+33adf09c59de9569d6109676d37e5b778baca57c")]
 [assembly: System.Reflection.AssemblyProductAttribute("SharpTimer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SharpTimer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
