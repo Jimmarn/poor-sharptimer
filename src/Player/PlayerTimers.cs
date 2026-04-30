@@ -96,7 +96,7 @@ namespace SharpTimer
 
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
-                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone", $"({playerTimer.CurrentMapCheckpoint}/{cpTriggerCount})"]}");
                     Utils.LogDebug($"Player current checkpoint: {playerTimers[slot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
@@ -120,7 +120,7 @@ namespace SharpTimer
             {
                 if (playerTimer.CurrentMapCheckpoint != cpTriggerCount && useCheckpointVerification)
                 {
-                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone"]}({cpTriggerCount})");
+                    Utils.PrintToChat(player, $"{ChatColors.LightRed}{Localizer["error_checkpointnotmatchfinalone", $"({playerTimer.CurrentMapCheckpoint}/{cpTriggerCount})"]}");
                     Utils.LogDebug($"Player current checkpoint: {playerTimers[slot].CurrentMapCheckpoint}; Final checkpoint: {cpTriggerCount}");
                     playerTimer.IsTimerRunning = false;
                     playerTimer.IsRecordingReplay = false;
@@ -189,7 +189,7 @@ namespace SharpTimer
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     if (playerTimers[slot] == null || playerTimers[slot].CurrentMapStage == stageTrigger) return;
 
-                    // Claim this stage immediately to prevent duplicate triggers firing during the async DB awaits below.
+                    // Pre-set immediately to block duplicate triggers during the async DB awaits below.
                     playerTimers[slot].CurrentMapStage = stageTrigger;
 
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(prevStage, style, mode);
@@ -202,7 +202,7 @@ namespace SharpTimer
                         if (!IsAllowedPlayer(player)) return;
                         if (playerTimers.TryGetValue(slot, out PlayerTimerInfo? playerTimer))
                         {
-                            if (playerTimer == null || playerTimer.CurrentMapStage == stageTrigger) return;
+                            if (playerTimer == null || playerTimer.CurrentMapStage != stageTrigger) return;
                             //TO-DO: Add player setting to enabled/disable printing time comparisons to chat
                             
                             if (previousStageTime != 0)
@@ -213,9 +213,9 @@ namespace SharpTimer
                                                                 $" {(previousStageTime != srStageTime && enableStageSR ? $"[SR {Utils.FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentSpeed, out float speed2) && speed2 >= 100) //workaround for staged maps with not telehops
-                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" {(previousStageSpeed != srStageSpeed && enableStageSR ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentSpeed}u/s{ChatColors.White}]" +
+                                                                    $" [{Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                    $" {(previousStageSpeed != srStageSpeed && enableStageSR ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
 
                                 if (!playerTimers[slot].HideChatSpeed)
                                 {
@@ -225,9 +225,9 @@ namespace SharpTimer
                                                                     $" {(previousStageTime != srStageTime && enableStageSR ? $"[SR {Utils.FormatTimeDifference(playerStageTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                     if (float.TryParse(currentSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                        $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                        $" {(previousStageSpeed != srStageSpeed && enableStageSR ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentSpeed}u/s{ChatColors.White}]" +
+                                                                        $" [{Utils.FormatSpeedDifferenceFromString(currentSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                        $" {(previousStageSpeed != srStageSpeed && enableStageSR ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                                 }
                             }
 
@@ -268,7 +268,7 @@ namespace SharpTimer
                                 playerTimer.CheckpointFlashSpeedDiff = speedDiff;
                             }
 
-                            // CurrentMapStage already set to stageTrigger before the async awaits — no increment needed.
+                            // CurrentMapStage already pre-set before the async awaits — no increment needed.
                             playerTimer.StageTicks = 0;
                         }
                     });
@@ -296,7 +296,8 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[slot].CurrentMapCheckpoint++;
+                        if (playerTimers[slot].CurrentMapCheckpoint == cpTrigger) return;
+                        playerTimers[slot].CurrentMapCheckpoint = cpTrigger;
                         return;
                     }
 
@@ -331,9 +332,9 @@ namespace SharpTimer
                                                                $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentStageSpeed, out float speed2) && speed2 >= 100) //workaround for staged maps with not telehops
-                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentStageSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                   $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                   $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                   $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
 
                                 if (!playerTimers[slot].HideChatSpeed)
                                 {
@@ -343,9 +344,9 @@ namespace SharpTimer
                                                                 $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                     if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentStageSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                    $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                                 }
                             }
 
@@ -421,7 +422,8 @@ namespace SharpTimer
                 {
                     if (useStageTriggers == true) //use stagetime instead
                     {
-                        playerTimers[slot].CurrentMapCheckpoint++;
+                        if (playerTimers[slot].CurrentMapCheckpoint == bonusCheckpointTrigger) return;
+                        playerTimers[slot].CurrentMapCheckpoint = bonusCheckpointTrigger;
                         return;
                     }
 
@@ -432,9 +434,6 @@ namespace SharpTimer
                     var (srSteamID, srPlayerName, srTime) = ("null", "null", "null");
                     
                     if (playerTimers[slot] == null || playerTimers[slot].CurrentMapCheckpoint == bonusCheckpointTrigger) return;
-
-                    // Claim this checkpoint immediately to prevent duplicate triggers during the async DB awaits below.
-                    playerTimers[slot].CurrentMapCheckpoint = bonusCheckpointTrigger;
 
                     (srSteamID, srPlayerName, srTime) = await GetStageRecordSteamIDFromDatabase(bonusCheckpointTrigger, style, mode);
                     var (previousStageTime, previousStageSpeed) = await GetStageRecordFromDatabase(bonusCheckpointTrigger, playerSteamID, style, mode);
@@ -461,9 +460,9 @@ namespace SharpTimer
                                                                $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                 if (float.TryParse(currentStageSpeed, out float speed2) && speed2 >= 100) //workaround for staged maps with not telehops
-                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentStageSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                    Utils.PrintToSpec(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                    $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                    $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
 
                                 if (!playerTimers[slot].HideChatSpeed)
                                 {
@@ -473,9 +472,9 @@ namespace SharpTimer
                                                                    $" {(previousStageTime != srStageTime ? $"[SR {Utils.FormatTimeDifference(playerTimerTicks, srStageTime)}{ChatColors.White}]" : "")}");
 
                                     if (float.TryParse(currentStageSpeed, out float speed) && speed >= 100) //workaround for staged maps with not telehops
-                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{FormatSpeedChat(currentStageSpeed, playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                       $" [{FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" +
-                                                                       $" {(previousStageSpeed != srStageSpeed ? $"[SR {FormatSpeedDiffChat(Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed), playerTimers[slot].SpeedUnitKmh)}{ChatColors.White}]" : "")}");
+                                        Utils.PrintToChat(player, $"Speed: {ChatColors.White}[{primaryChatColor}{currentStageSpeed}u/s{ChatColors.White}]" +
+                                                                       $" [{Utils.FormatSpeedDifferenceFromString(currentStageSpeed, previousStageSpeed)}u/s{ChatColors.White}]" +
+                                                                       $" {(previousStageSpeed != srStageSpeed ? $"[SR {Utils.FormatSpeedDifferenceFromString(currentStageSpeed, srStageSpeed)}u/s{ChatColors.White}]" : "")}");
                                 }
                             }
 
